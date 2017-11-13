@@ -78,12 +78,6 @@ static int debug(lua_State *L)
     google::protobuf::util::JsonOptions options;
     google::protobuf::util::MessageToJsonString(person, &output);
     std::cout << output.c_str() << std::endl;
-    ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >* dict = person.mutable_dict();
-    dict->clear();
-    (*dict)[1] = "abc";
-    (*dict)[2] = "cba";
-    memset(cache_buffer, 0, sizeof(cache_buffer));
-    person.SerializeToArray(cache_buffer, sizeof(cache_buffer));
     return 0;
 }
 

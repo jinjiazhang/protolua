@@ -10,5 +10,5 @@ local player = {
 		{number = "1868200xxxx", type = 1},
 	}
 }
-local data = proto.pack("Person", player)
+local data = proto.encode("Person", player)
 proto.debug("Person", data)
