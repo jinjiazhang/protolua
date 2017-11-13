@@ -1,0 +1,6 @@
+syntax = "proto3";
+
+message Person {
+	// map<int32, string> dict = 1;
+	int32 a = 1 [default=5];
+}
