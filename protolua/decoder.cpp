@@ -1,6 +1,6 @@
 #include "proto.h"
 
-bool DecodeMessage(const Descriptor* message, CodedInputStream* stream, lua_State* L)
+bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State* L)
 {
 
     return true;
