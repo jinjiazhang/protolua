@@ -10,7 +10,14 @@ static int parse(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
     const char* file = lua_tostring(L, 1);
-    lua_pushboolean(L, ProtoParse(file));
+    if (!ProtoParse(file))
+    {
+        log_error("proto.parse fail, file=%s", file);
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    lua_pushboolean(L, true);
     return 1;
 }
 
@@ -21,12 +28,14 @@ static int encode(lua_State *L)
     assert(lua_istable(L, 2));
     const char* proto = lua_tostring(L, 1);
     size_t size = sizeof(cache_buffer);
-    if (ProtoEncode(proto, L, 2, cache_buffer, &size))
+    if (!ProtoEncode(proto, L, 2, cache_buffer, &size))
     {
-        lua_pushlstring(L, cache_buffer, size);
-        return 1;
+        log_error("proto.encode fail, proto=%s", proto);
+        return 0;
     }
-    return 0;
+
+    lua_pushlstring(L, cache_buffer, size);
+    return 1;
 }
 
 // person = proto.decode("Person", data)
@@ -36,7 +45,14 @@ static int decode(lua_State *L)
     size_t size = 0;
     const char* proto = lua_tostring(L, 1);
     const char* data = lua_tolstring(L, 2, &size);
-    return ProtoDecode(proto, L, data, size);
+    if (!ProtoDecode(proto, L, data, size))
+    {
+        log_error("proto.decode fail, proto=%s", proto);
+        return 0;
+    }
+
+    int stack = lua_gettop(L);
+    return stack - 2;
 }
 
 // data = proto.pack("Person", name, id, email)
@@ -46,12 +62,14 @@ static int pack(lua_State *L)
     int stack = lua_gettop(L);
     const char* proto = lua_tostring(L, 1);
     size_t size = sizeof(cache_buffer);
-    if (ProtoPack(proto, L, 2, stack, cache_buffer, &size))
+    if (!ProtoPack(proto, L, 2, stack, cache_buffer, &size))
     {
-        lua_pushlstring(L, cache_buffer, size);
-        return 1;
+        log_error("proto.pack fail, proto=%s", proto);
+        return 0;
     }
-    return 0;
+
+    lua_pushlstring(L, cache_buffer, size);
+    return 1;
 }
 
 // name, id, email = proto.unpack("Person", data)
@@ -61,7 +79,14 @@ static int unpack(lua_State *L)
     size_t size = 0;
     const char* proto = lua_tostring(L, 1);
     const char* data = lua_tolstring(L, 2, &size);
-    return ProtoUnpack(proto, L, data, size);
+    if (!ProtoUnpack(proto, L, data, size))
+    {
+        log_error("proto.unpack fail, proto=%s", proto);
+        return 0;
+    }
+    
+    lua_pushlstring(L, cache_buffer, size);
+    return 1;
 }
 
 // proto.debug("Person", data)
@@ -105,6 +130,24 @@ bool ProtoParse(const char* file)
 void ProtoPrint(int level, const char* format, ...)
 {
 
+}
+
+struct FieldOrderingByNumber {
+    inline bool operator()(const FieldDescriptor* a,
+        const FieldDescriptor* b) const {
+            return a->number() < b->number();
+    }
+};
+
+// Sort the fields of the given Descriptor by number into a new[]'d array
+// and return it.
+std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor) {
+    std::vector<const FieldDescriptor*> fields(descriptor->field_count());
+    for (int i = 0; i < descriptor->field_count(); i++) {
+        fields[i] = descriptor->field(i);
+    }
+    std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
+    return fields;
 }
 
 #ifdef _WIN32  

@@ -1,3 +1,6 @@
+#ifndef _JINJIAZHANG_PROTO_H_
+#define _JINJIAZHANG_PROTO_H_
+
 extern "C" {
 #include "lua.h"
 #include "lualib.h"
@@ -37,7 +40,11 @@ void ProtoPrint(int level, const char* format, ...);
 bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_t* size);
 bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size);
 
-int ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size);
-int ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size);
+bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size);
+bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size);
+
+std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 
 extern DescriptorPool* g_descriptor_pool;
+
+#endif

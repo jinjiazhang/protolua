@@ -273,9 +273,11 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
 
     ArrayOutputStream buffer((void*)output, (int)*size);
     CodedOutputStream stream(&buffer);
-    for (int i = 0; i < message->field_count(); i++)
+
+    std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(message);
+    for (unsigned int i = 0; i < fields.size(); i++)
     {
-        const FieldDescriptor* field = message->field(i);
+        const FieldDescriptor* field = fields[i];
         lua_getfield(L, index, field->name().c_str());
         PROTO_DO(EncodeField(field, &stream, L, index + 1));
         lua_remove(L, index + 1);
@@ -294,9 +296,11 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
 
     ArrayOutputStream buffer((void*)output, (int)*size);
     CodedOutputStream stream(&buffer);
-    for (int i = 0; i < message->field_count() && start + i <= end; i++)
+    
+    std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(message);
+    for (unsigned int i = 0; i < fields.size(); i++)
     {
-        const FieldDescriptor* field = message->field(i);
+        const FieldDescriptor* field = fields[i];
         PROTO_DO(EncodeField(field, &stream, L, start + i));
     }
 
