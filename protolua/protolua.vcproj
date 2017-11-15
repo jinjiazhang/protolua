@@ -189,18 +189,6 @@
 				>
 			</File>
 		</Filter>
-		<Filter
-			Name="Message Files"
-			>
-			<File
-				RelativePath="..\libs\person.pb.cc"
-				>
-			</File>
-			<File
-				RelativePath="..\libs\person.pb.h"
-				>
-			</File>
-		</Filter>
 	</Files>
 	<Globals>
 	</Globals>

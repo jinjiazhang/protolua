@@ -226,7 +226,9 @@ bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_S
 {
     lua_Integer index = 1;
     lua_newtable(L);
-    if (field->is_packed()) // tag, length, value1, value2, value3, ...
+
+    WireFormatLite::WireType type = WireFormatLite::GetTagWireType(tag);
+    if (field->is_packable() && type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) // [packed=true]
     {
         int length;
         PROTO_DO(input->ReadVarintSizeAsInt(&length));
@@ -238,7 +240,7 @@ bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_S
         }
         input->PopLimit(limit);
     }
-    else // tag, value1, tag, value2, tag, value3, ... ...
+    else // [packed=false]
     {
         do 
         {
@@ -308,7 +310,7 @@ bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State
             continue;
         }
 
-        PROTO_ASSERT(tag==WireFormat::MakeTag(field));
+        // PROTO_ASSERT(tag==WireFormat::MakeTag(field));
         lua_pushstring(L, field->name().c_str());
         PROTO_DO(DecodeField(field, input, L, tag));
         lua_settable(L, -3);
@@ -359,7 +361,7 @@ bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State
             continue;
         }
 
-        PROTO_ASSERT(tag==WireFormat::MakeTag(field));
+        // PROTO_ASSERT(tag==WireFormat::MakeTag(field));
         PROTO_DO(DecodeField(field, input, L, tag));
         PROTO_DO(AdjustStack(sequence, L, number));
         numbers.insert(field->number());

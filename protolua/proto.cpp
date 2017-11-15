@@ -1,6 +1,4 @@
 #include "proto.h"
-#include <ostream>
-#include "../libs/person.pb.h"
 
 char cache_buffer[2*1024];
 DescriptorPool* g_descriptor_pool = NULL;
@@ -12,7 +10,7 @@ static int parse(lua_State *L)
     const char* file = lua_tostring(L, 1);
     if (!ProtoParse(file))
     {
-        log_error("proto.parse fail, file=%s", file);
+        ProtoError("proto.parse fail, file=%s", file);
         lua_pushboolean(L, false);
         return 1;
     }
@@ -30,7 +28,7 @@ static int encode(lua_State *L)
     size_t size = sizeof(cache_buffer);
     if (!ProtoEncode(proto, L, 2, cache_buffer, &size))
     {
-        log_error("proto.encode fail, proto=%s", proto);
+        ProtoError("proto.encode fail, proto=%s", proto);
         return 0;
     }
 
@@ -47,7 +45,7 @@ static int decode(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoDecode(proto, L, data, size))
     {
-        log_error("proto.decode fail, proto=%s", proto);
+        ProtoError("proto.decode fail, proto=%s", proto);
         return 0;
     }
 
@@ -64,7 +62,7 @@ static int pack(lua_State *L)
     size_t size = sizeof(cache_buffer);
     if (!ProtoPack(proto, L, 2, stack, cache_buffer, &size))
     {
-        log_error("proto.pack fail, proto=%s", proto);
+        ProtoError("proto.pack fail, proto=%s", proto);
         return 0;
     }
 
@@ -81,29 +79,12 @@ static int unpack(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoUnpack(proto, L, data, size))
     {
-        log_error("proto.unpack fail, proto=%s", proto);
+        ProtoError("proto.unpack fail, proto=%s", proto);
         return 0;
     }
     
     int stack = lua_gettop(L);
     return stack - 2;
-}
-
-// proto.debug("Person", data)
-static int debug(lua_State *L)
-{
-    assert(lua_gettop(L) == 2);
-    size_t size = 0;
-    const char* proto = lua_tostring(L, 1); 
-    const char* data = lua_tolstring(L, 2, &size);
-
-    string output;
-    Person person;
-    person.ParseFromArray((void*)data, size);
-    google::protobuf::util::JsonOptions options;
-    google::protobuf::util::MessageToJsonString(person, &output);
-    std::cout << output.c_str() << std::endl;
-    return 0;
 }
 
 static const struct luaL_Reg protoLib[]={
@@ -112,7 +93,6 @@ static const struct luaL_Reg protoLib[]={
     {"decode", decode},
     {"pack", pack},
     {"unpack", unpack},
-    {"debug", debug},
     {NULL, NULL}
 };
 
@@ -127,9 +107,9 @@ bool ProtoParse(const char* file)
     return true;
 }
 
-void ProtoPrint(int level, const char* format, ...)
+bool ProtoError(const char* format, ...)
 {
-
+    return true;
 }
 
 struct FieldOrderingByNumber {

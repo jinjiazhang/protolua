@@ -54,26 +54,38 @@ bool EncodeField(const FieldDescriptor* field, CodedOutputStream* output, lua_St
 
 bool EncodeRequired(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    if (lua_isnil(L, index))
-        return false;
+    if (lua_isnil(L, index)) {
+        ProtoError("EncodeRequired field nil, field=%s", field->full_name());
+        return true;
+    }
     return EncodeSingle(field, output, L, index);
 }
 
 bool EncodeOptional(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    if (lua_isnil(L, index))
+    if (lua_isnil(L, index)) {
         return true;
+    }
     return EncodeSingle(field, output, L, index);
 }
 
 bool EncodeRepeated(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    if (lua_isnil(L, index)) return true;
-    if (!lua_istable(L, index)) return false;
+    if (lua_isnil(L, index)) {
+        return true;
+    }
+
+    if (!lua_istable(L, index)) {
+        ProtoError("EncodeRepeated field isn't a table, field=", field->full_name());
+        return false;
+    }
 
     int count = (int)luaL_len(L, index);
-    if (count == 0) return true;
-    if (field->is_packed()) // tag, length, value1, value2, value3, ...
+    if (count == 0) {
+        return true;
+    }
+
+    if (field->is_packed()) // [packed=true] tag, length, value1, value2, value3, ...
     {
         WireFormatLite::WriteTag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
         const char* position = SkipLength(output);
@@ -85,7 +97,7 @@ bool EncodeRepeated(const FieldDescriptor* field, CodedOutputStream* output, lua
         }
         PROTO_DO(FillLength(output, position));
     }
-    else // tag, value1, tag, value2, tag, value3, ... ...
+    else // [packed=false] tag, value1, tag, value2, tag, value3, ... ...
     {
         for (int i = 0; i < count; i++)
         {
@@ -214,7 +226,7 @@ bool EncodeBoolean(const FieldDescriptor* field, CodedOutputStream* output, lua_
 
 bool EncodeString(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    PROTO_ASSERT(!field->is_packed()); // see protobuf : "[packed = true] can only be specified for repeated primitive fields."
+    PROTO_ASSERT(!field->is_packed()); // must not [packed = true]
     size_t length = 0;
     const char* bytes = lua_tolstring(L, index, &length);
     WireFormatLite::WriteString(field->number(), string(bytes, length), output);
@@ -223,8 +235,12 @@ bool EncodeString(const FieldDescriptor* field, CodedOutputStream* output, lua_S
 
 bool EncodeMessage(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    PROTO_ASSERT(!field->is_packed()); // see protobuf : "[packed = true] can only be specified for repeated primitive fields."
-    PROTO_ASSERT(lua_istable(L, index));
+    if (!lua_istable(L, index)) {
+        ProtoError("EncodeMessage field isn't a table, field=", field->full_name());
+        return false;
+    }
+
+    PROTO_ASSERT(!field->is_packed()); // must not [packed = true]
     string type_name = field->message_type()->full_name();
     const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
     PROTO_ASSERT(message);
@@ -245,8 +261,12 @@ bool EncodeMessage(const FieldDescriptor* field, CodedOutputStream* output, lua_
 
 bool EncodeTable(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
-    PROTO_ASSERT(!field->is_packed()); // see protobuf : "[packed = true] can only be specified for repeated primitive fields."
-    PROTO_ASSERT(lua_istable(L, index));
+    if (!lua_istable(L, index)) {
+        ProtoError("EncodeTable field isn't a table, field=", field->full_name());
+        return false;
+    }
+
+    PROTO_ASSERT(!field->is_packed()); // must not [packed = true]
     string type_name = field->message_type()->full_name();
     const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
     PROTO_ASSERT(message);
@@ -292,8 +312,7 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
 
 bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size)
 {
-    PROTO_ASSERT(start > 0);
-    PROTO_ASSERT(end >= start);
+    PROTO_ASSERT(start > 0 && end >= start);
     const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(proto);
     PROTO_ASSERT(message);
 
