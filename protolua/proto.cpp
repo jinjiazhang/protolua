@@ -85,8 +85,8 @@ static int unpack(lua_State *L)
         return 0;
     }
     
-    lua_pushlstring(L, cache_buffer, size);
-    return 1;
+    int stack = lua_gettop(L);
+    return stack - 2;
 }
 
 // proto.debug("Person", data)

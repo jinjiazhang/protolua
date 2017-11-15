@@ -10,9 +10,10 @@ bool DecodeString(const FieldDescriptor* field, CodedInputStream* input, lua_Sta
 bool DecodeTable(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
 bool DecodeMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
 
-bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State* L);
 bool DefaultField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L);
 bool DefaultMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L);
+bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State* L);
+bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State* L);
 
 
 bool DefaultField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L)
@@ -327,6 +328,36 @@ bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State
     return true;
 }
 
+bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State* L)
+{
+    uint32 tag;
+    std::set<int> numbers;
+    while (tag = input->ReadTagNoLastTag())
+    {
+        int number = WireFormatLite::GetTagFieldNumber(tag);
+        const FieldDescriptor* field = message->FindFieldByNumber(number);
+        if (field == NULL) // skip unknow field
+        {
+            WireFormat::SkipField(input, tag, NULL);
+            continue;
+        }
+
+        PROTO_ASSERT(tag==WireFormat::MakeTag(field));
+        PROTO_DO(DecodeField(field, input, L, tag));
+        numbers.insert(field->number());
+    }
+
+    for (int i = 0; i < message->field_count(); i++)
+    {
+        const FieldDescriptor* field = message->field(i);
+        if (numbers.find(field->number()) == numbers.end())
+        {
+            PROTO_DO(DefaultField(field, input, L));
+        }
+    }
+    return true;
+}
+
 bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size)
 {
     const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(proto);
@@ -339,5 +370,10 @@ bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size
 
 bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    return 0;
+    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(proto);
+    PROTO_ASSERT(message);
+
+    ArrayInputStream buffer((void*)input, (int)size);
+    CodedInputStream stream(&buffer);
+    return UnpackMessage(message, &stream, L);
 }
