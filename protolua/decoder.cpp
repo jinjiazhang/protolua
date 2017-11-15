@@ -234,7 +234,7 @@ bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_S
         while (input->BytesUntilLimit() > 0) {
             PROTO_DO(DecodeSingle(field, input, L, tag));
             lua_seti(L, -2, index);
-            index++;
+            ++index;
         }
         input->PopLimit(limit);
     }
@@ -244,7 +244,7 @@ bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_S
         {
             PROTO_DO(DecodeSingle(field, input, L, tag));
             lua_seti(L, -2, index);
-            index++;
+            ++index;
         } while (input->ExpectTag(tag));
     }
     return true;
@@ -328,10 +328,27 @@ bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State
     return true;
 }
 
+bool AdjustStack(std::list<int>& sequence, lua_State* L, int number)
+{
+    int index = -1;
+    std::list<int>::reverse_iterator it = sequence.rbegin();
+    for (; it != sequence.rend(); ++it)
+    {
+        if (*it < number)
+            break;
+        --index;
+    }
+
+    sequence.insert(it.base(), number);
+    lua_insert(L, index);
+    return true;
+}
+
 bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State* L)
 {
     uint32 tag;
     std::set<int> numbers;
+    std::list<int> sequence;
     while (tag = input->ReadTagNoLastTag())
     {
         int number = WireFormatLite::GetTagFieldNumber(tag);
@@ -344,6 +361,7 @@ bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State
 
         PROTO_ASSERT(tag==WireFormat::MakeTag(field));
         PROTO_DO(DecodeField(field, input, L, tag));
+        PROTO_DO(AdjustStack(sequence, L, number));
         numbers.insert(field->number());
     }
 
@@ -353,6 +371,7 @@ bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State
         if (numbers.find(field->number()) == numbers.end())
         {
             PROTO_DO(DefaultField(field, input, L));
+            PROTO_DO(AdjustStack(sequence, L, field->number()));
         }
     }
     return true;
