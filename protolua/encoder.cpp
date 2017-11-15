@@ -231,9 +231,10 @@ bool EncodeMessage(const FieldDescriptor* field, CodedOutputStream* output, lua_
 
     WireFormatLite::WriteTag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
     const char* position = SkipLength(output);
-    for (int i = 0; i < message->field_count(); i++)
+    std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(message);
+    for (unsigned int i = 0; i < fields.size(); i++)
     {
-        const FieldDescriptor* field = message->field(i);
+        const FieldDescriptor* field = fields[i];
         lua_getfield(L, index, field->name().c_str());
         PROTO_DO(EncodeField(field, output, L, index + 1));
         lua_remove(L, index + 1);
@@ -249,18 +250,20 @@ bool EncodeTable(const FieldDescriptor* field, CodedOutputStream* output, lua_St
     string type_name = field->message_type()->full_name();
     const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
     PROTO_ASSERT(message);
+    
+    const FieldDescriptor* key = message->field(0);
+    const FieldDescriptor* value = message->field(1);
+    const char* position;
 
     lua_pushnil(L);
     while (lua_next(L, index))
     {
         WireFormatLite::WriteTag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
-        const char* position = SkipLength(output);
-        const FieldDescriptor* key = message->field(0);
+        position = SkipLength(output);
         PROTO_DO(EncodeField(key, output, L, index + 1));
-        const FieldDescriptor* value = message->field(1);
         PROTO_DO(EncodeField(value, output, L, index + 2));
-        lua_pop(L, 1);
         PROTO_DO(FillLength(output, position));
+        lua_pop(L, 1);
     }
     return true;
 }
