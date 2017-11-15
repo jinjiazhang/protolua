@@ -8,6 +8,7 @@ extern "C" {
 }
 
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/compiler/importer.h>
 #include <google/protobuf/util/json_util.h>
