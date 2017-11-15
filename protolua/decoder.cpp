@@ -57,7 +57,7 @@ bool DecodeSingle(const FieldDescriptor* field, CodedInputStream* input, lua_Sta
     return true;
 }
 
-#define PROTP_READ_PRIMITIVE(CType, WType, input, value) \
+#define PROTO_READ_PRIMITIVE(CType, WType, input, value) \
     do { \
         CType temp; \
         PROTO_DO((WireFormatLite::ReadPrimitive<CType, WType>((input), &temp))); \
@@ -70,10 +70,10 @@ bool DecodeNumber(const FieldDescriptor* field, CodedInputStream* input, lua_Sta
     switch (field->type())
     {
     case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
-        PROTP_READ_PRIMITIVE(double, WireFormatLite::TYPE_DOUBLE, input, &value);
+        PROTO_READ_PRIMITIVE(double, WireFormatLite::TYPE_DOUBLE, input, &value);
         break;
     case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
-        PROTP_READ_PRIMITIVE(float, WireFormatLite::TYPE_FLOAT, input, &value);
+        PROTO_READ_PRIMITIVE(float, WireFormatLite::TYPE_FLOAT, input, &value);
         break;
     default:
         return false;
@@ -89,37 +89,37 @@ bool DecodeInteger(const FieldDescriptor* field, CodedInputStream* input, lua_St
     switch (field->type())
     {
     case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-        PROTP_READ_PRIMITIVE(int64, WireFormatLite::TYPE_INT64, input, &value);
+        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_INT64, input, &value);
         break;
     case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-        PROTP_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_UINT64, input, &value);
+        PROTO_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_UINT64, input, &value);
         break;
     case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-        PROTP_READ_PRIMITIVE(int32, WireFormatLite::TYPE_INT32, input, &value);
+        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_INT32, input, &value);
         break;
     case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-        PROTP_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_UINT32, input, &value);
+        PROTO_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_UINT32, input, &value);
         break;
     case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
-        PROTP_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_FIXED64, input, &value);
+        PROTO_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_FIXED64, input, &value);
         break;
     case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
-        PROTP_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_FIXED32, input, &value);
+        PROTO_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_FIXED32, input, &value);
         break;
     case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
-        PROTP_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SFIXED32, input, &value);
+        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SFIXED32, input, &value);
         break;
     case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
-        PROTP_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SFIXED64, input, &value);
+        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SFIXED64, input, &value);
         break;
     case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-        PROTP_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SINT32, input, &value);
+        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SINT32, input, &value);
         break;
     case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-        PROTP_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SINT64, input, &value);
+        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SINT64, input, &value);
         break;
     case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
-        PROTP_READ_PRIMITIVE(int, WireFormatLite::TYPE_ENUM, input, &value);
+        PROTO_READ_PRIMITIVE(int, WireFormatLite::TYPE_ENUM, input, &value);
         break;
     default:
         return false;
