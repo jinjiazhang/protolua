@@ -123,8 +123,6 @@ struct FieldOrderingByNumber {
     }
 };
 
-// Sort the fields of the given Descriptor by number into a new[]'d array
-// and return it.
 std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor) {
     std::vector<const FieldDescriptor*> fields(descriptor->field_count());
     for (int i = 0; i < descriptor->field_count(); i++) {
