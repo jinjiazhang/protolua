@@ -38,6 +38,44 @@ bool FillLength(CodedOutputStream* output, const char* last_pos)
     return true;
 }
 
+bool CheckDefault(const FieldDescriptor* field, lua_State* L, int index)
+{
+    switch (field->type())
+    {
+    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+        return lua_tonumber(L, index) == field->default_value_double();
+    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
+        return lua_tonumber(L, index) == field->default_value_float();
+    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
+    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
+        return lua_tointeger(L, index) == field->default_value_int64();
+    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
+    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
+        return lua_tointeger(L, index) == field->default_value_int32();
+    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
+    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+        return lua_tointeger(L, index) == field->default_value_uint64();
+    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
+    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+        return lua_tointeger(L, index) == field->default_value_uint32();
+    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
+        return lua_tointeger(L, index) == field->default_value_enum()->number();
+    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+        return lua_toboolean(L, index) == (int)field->default_value_bool();
+    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
+    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+        return lua_isnil(L, index) || field->default_value_string().compare(lua_tostring(L, index)) == 0;
+    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+        return lua_isnil(L, index);
+    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
+    default:
+        return false;
+    }
+    return true;
+}
+
 bool EncodeField(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
     if (field->is_map())
@@ -58,6 +96,12 @@ bool EncodeRequired(const FieldDescriptor* field, CodedOutputStream* output, lua
         ProtoError("EncodeRequired field nil, field=%s", field->full_name());
         return true;
     }
+
+    if (CheckDefault(field, L, index))
+    {
+        return true;
+    }
+
     return EncodeSingle(field, output, L, index);
 }
 
@@ -66,6 +110,12 @@ bool EncodeOptional(const FieldDescriptor* field, CodedOutputStream* output, lua
     if (lua_isnil(L, index)) {
         return true;
     }
+
+    if (CheckDefault(field, L, index))
+    {
+        return true;
+    }
+
     return EncodeSingle(field, output, L, index);
 }
 
