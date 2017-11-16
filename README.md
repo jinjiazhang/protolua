@@ -3,6 +3,8 @@ Protocol Buffers for lua
 
 https://github.com/jinjiazhang/protolua/
 
+## Overview
+ProtoLua is a google protocol buffers C library for Lua which implement less than 1000 lines code. Parse proto2 or proto3 file dynamically without code generation, You can also redevelop it to  support RPC like 'Advance Example'.
 ## Quick Example
 person.proto
 ```C
@@ -78,3 +80,8 @@ end
 
 proto.CallServer("OnBuyItemReq", 1021, 10)
 ```
+## Dependencies
+lua-5.3.4: https://www.lua.org/ftp/lua-5.3.4.tar.gz<br>
+protobuf-3.4.1: https://github.com/google/protobuf/releases/download/v3.4.1/protobuf-cpp-3.4.1.tar.gz<br>
+If you want to use other version of library, you need alter little code may be.<br>
+You can use 'RelWithDebInfo' config to compile protolua.dll with vs2008 for test.
