@@ -93,7 +93,7 @@ bool EncodeField(const FieldDescriptor* field, CodedOutputStream* output, lua_St
 bool EncodeRequired(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        ProtoError("EncodeRequired field nil, field=%s", field->full_name());
+        ProtoError("EncodeRequired field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
@@ -126,7 +126,7 @@ bool EncodeRepeated(const FieldDescriptor* field, CodedOutputStream* output, lua
     }
 
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeRepeated field isn't a table, field=", field->full_name());
+        ProtoError("EncodeRepeated field isn't a table, field=%s\n", field->full_name().c_str());
         return false;
     }
 
@@ -286,7 +286,7 @@ bool EncodeString(const FieldDescriptor* field, CodedOutputStream* output, lua_S
 bool EncodeMessage(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeMessage field isn't a table, field=", field->full_name());
+        ProtoError("EncodeMessage field isn't a table, field=%s\n", field->full_name().c_str());
         return false;
     }
 
@@ -312,7 +312,7 @@ bool EncodeMessage(const FieldDescriptor* field, CodedOutputStream* output, lua_
 bool EncodeTable(const FieldDescriptor* field, CodedOutputStream* output, lua_State* L, int index)
 {
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeTable field isn't a table, field=", field->full_name());
+        ProtoError("EncodeTable field isn't a table, field=%s\n", field->full_name().c_str());
         return false;
     }
 
@@ -370,7 +370,7 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
     CodedOutputStream stream(&buffer);
     
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(message);
-    for (unsigned int i = 0; i < fields.size(); i++)
+    for (int i = 0; i < (int)fields.size() && start + i <= end; i++)
     {
         const FieldDescriptor* field = fields[i];
         PROTO_DO(EncodeField(field, &stream, L, start + i));

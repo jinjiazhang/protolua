@@ -10,7 +10,7 @@ static int parse(lua_State *L)
     const char* file = lua_tostring(L, 1);
     if (!ProtoParse(file))
     {
-        ProtoError("proto.parse fail, file=%s", file);
+        ProtoError("proto.parse fail, file=%s\n", file);
         lua_pushboolean(L, false);
         return 1;
     }
@@ -28,7 +28,7 @@ static int encode(lua_State *L)
     size_t size = sizeof(cache_buffer);
     if (!ProtoEncode(proto, L, 2, cache_buffer, &size))
     {
-        ProtoError("proto.encode fail, proto=%s", proto);
+        ProtoError("proto.encode fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -45,7 +45,7 @@ static int decode(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoDecode(proto, L, data, size))
     {
-        ProtoError("proto.decode fail, proto=%s", proto);
+        ProtoError("proto.decode fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -56,13 +56,13 @@ static int decode(lua_State *L)
 // data = proto.pack("Person", name, id, email)
 static int pack(lua_State *L)
 {
-    assert(lua_gettop(L) >= 2);
+    assert(lua_gettop(L) >= 1);
     int stack = lua_gettop(L);
     const char* proto = lua_tostring(L, 1);
     size_t size = sizeof(cache_buffer);
     if (!ProtoPack(proto, L, 2, stack, cache_buffer, &size))
     {
-        ProtoError("proto.pack fail, proto=%s", proto);
+        ProtoError("proto.pack fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -79,7 +79,7 @@ static int unpack(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoUnpack(proto, L, data, size))
     {
-        ProtoError("proto.unpack fail, proto=%s", proto);
+        ProtoError("proto.unpack fail, proto=%s\n", proto);
         return 0;
     }
     
@@ -109,6 +109,10 @@ bool ProtoParse(const char* file)
 
 bool ProtoError(const char* format, ...)
 {
+    va_list	args;
+    va_start(args, format);
+    _vprintf_p(format, args);
+    va_end(args);
     return true;
 }
 
