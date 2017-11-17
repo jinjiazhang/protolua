@@ -8,12 +8,12 @@ ProtoLua is a google protocol buffers C library for Lua which implement less tha
 ## Quick Example
 person.proto
 ```C
-syntax = "proto2";
+syntax = "proto3";
 
 message Person {
-    required string name = 1;
-    required int32 id = 2;
-    optional string email = 3;
+    string name = 1;
+    int32 id = 2;
+    string email = 3;
     
     enum PhoneType {
         MOBILE = 0;
@@ -22,11 +22,12 @@ message Person {
     }
     
     message PhoneNumber {
-        required string number = 1;
-        optional PhoneType type = 2 [default = MOBILE];
+        string number = 1;
+        PhoneType type = 2;
     }
     
     repeated PhoneNumber phones = 4;
+    map<int32, string> subjects = 5;
 }
 ```
 test.lua
@@ -41,28 +42,33 @@ local player = {
     phones = {
         {number = "1818864xxxx", type = 1},
         {number = "1868200xxxx", type = 2},
+    },
+    subjects = {
+        [101] = "Chinese",
+        [102] = "English",
+        [103] = "Maths",
     }
 }
 
 local data = proto.encode("Person", player)
 local clone = proto.decode("Person", data)
 
-local data = proto.pack("Person", player.id, player.name, player.email, player.phones)
-local id, name, email, phones = proto.unpack("Person", data)
+local data = proto.pack("Person", player.name, player.id, player.email, player.phones, player.subjects)
+local name, id, email, phones, subjects = proto.unpack("Person", data)
 ```
 ## Advance Example
 ```C
-syntax = "proto2";
+syntax = "proto3";
 
 message OnBuyItemReq {
-    required int32 goodsId = 1;
-    required int32 goodsNum = 2;
+    int32 goodsId = 1;
+    int32 goodsNum = 2;
 }
 
 message OnBuyItemRsp {
-    required int32 retCode = 1;
-    required int32 goodsId = 2;
-    required int32 goodsNum = 3;
+    int32 retCode = 1;
+    int32 goodsId = 2;
+    int32 goodsNum = 3;
 }
 ```
 ```Lua
