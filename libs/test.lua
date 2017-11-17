@@ -8,15 +8,20 @@ local player = {
     phones = {
         {number = "1818864xxxx", type = 1},
         {number = "1868200xxxx", type = 2},
+    },
+    subjects = {
+    	[101] = "Chinese",
+    	[102] = "English",
+    	[103] = "Maths",
     }
 }
 
 local data = proto.encode("Person", player)
 local clone = proto.decode("Person", data)
 
-local data = proto.pack("Person", player.id, player.name, player.email, player.phones)
-local id, name, email, phones = proto.unpack("Person", data)
+local data = proto.pack("Person", player.name, player.id, player.email, player.phones, player.subjects)
+local name, id, email, phones, subjects = proto.unpack("Person", data)
 
-json = (loadfile "json.lua")()
-print(json:encode(copy))
-print(id, name, email, json:encode(phones))
+serpent = require("serpent")
+print(serpent.block(clone))
+print(name, id, email, serpent.block(phones), serpent.block(subjects))

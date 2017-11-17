@@ -291,8 +291,7 @@ bool EncodeMessage(CodedOutputStream* output, const FieldDescriptor* field, lua_
     }
 
     PROTO_ASSERT(!field->is_packed()); // must not [packed = true]
-    string type_name = field->message_type()->full_name();
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(type_name);
+    const Descriptor* descriptor = field->message_type();
     PROTO_ASSERT(descriptor);
 
     WireFormatLite::WriteTag(field->number(), WireFormatLite::WIRETYPE_LENGTH_DELIMITED, output);
@@ -317,8 +316,7 @@ bool EncodeTable(CodedOutputStream* output, const FieldDescriptor* field, lua_St
     }
 
     PROTO_ASSERT(!field->is_packed()); // must not [packed = true]
-    string type_name = field->message_type()->full_name();
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(type_name);
+    const Descriptor* descriptor = field->message_type();
     PROTO_ASSERT(descriptor);
     
     const FieldDescriptor* key = descriptor->field(0);
