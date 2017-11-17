@@ -8,6 +8,8 @@ extern "C" {
 }
 
 #include <google/protobuf/descriptor.h>
+#include <google/protobuf/dynamic_message.h>
+
 #include <google/protobuf/wire_format.h>
 #include <google/protobuf/wire_format_lite.h>
 #include <google/protobuf/compiler/importer.h>
@@ -31,5 +33,6 @@ bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size
 
 std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 extern DescriptorPool* g_descriptor_pool;
+extern MessageFactory* g_message_factory;
 
 #endif

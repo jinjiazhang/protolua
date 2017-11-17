@@ -2,6 +2,7 @@
 
 char cache_buffer[2*1024];
 DescriptorPool* g_descriptor_pool = NULL;
+MessageFactory* g_message_factory = NULL;
 
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)
@@ -148,5 +149,6 @@ extern "C" int luaopen_protolua(lua_State* L)
     DescriptorDatabase* descriptor_database = new SourceTreeDescriptorDatabase(disk_source_tree);
     g_descriptor_pool = new DescriptorPool(descriptor_database);
     g_descriptor_pool->EnforceWeakDependencies(true);
+    g_message_factory = new DynamicMessageFactory(g_descriptor_pool);
     return 1;
 }
