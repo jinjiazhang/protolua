@@ -28,12 +28,18 @@
 #include <google/protobuf/message.h>
 #include <google/protobuf/repeated_field.h>  // IWYU pragma: export
 #include <google/protobuf/extension_set.h>  // IWYU pragma: export
+#include <google/protobuf/map.h>  // IWYU pragma: export
+#include <google/protobuf/map_entry.h>
+#include <google/protobuf/map_field_inl.h>
 #include <google/protobuf/generated_enum_reflection.h>
 #include <google/protobuf/unknown_field_set.h>
 // @@protoc_insertion_point(includes)
 class Person;
 class PersonDefaultTypeInternal;
 extern PersonDefaultTypeInternal _Person_default_instance_;
+class Person_CodesEntry;
+class Person_CodesEntryDefaultTypeInternal;
+extern Person_CodesEntryDefaultTypeInternal _Person_CodesEntry_default_instance_;
 class Person_PhoneNumber;
 class Person_PhoneNumberDefaultTypeInternal;
 extern Person_PhoneNumberDefaultTypeInternal _Person_PhoneNumber_default_instance_;
@@ -56,7 +62,9 @@ void InitDefaults();
 enum Person_PhoneType {
   Person_PhoneType_MOBILE = 0,
   Person_PhoneType_HOME = 1,
-  Person_PhoneType_WORK = 2
+  Person_PhoneType_WORK = 2,
+  Person_PhoneType_Person_PhoneType_INT_MIN_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32min,
+  Person_PhoneType_Person_PhoneType_INT_MAX_SENTINEL_DO_NOT_USE_ = ::google::protobuf::kint32max
 };
 bool Person_PhoneType_IsValid(int value);
 const Person_PhoneType Person_PhoneType_PhoneType_MIN = Person_PhoneType_MOBILE;
@@ -101,13 +109,6 @@ class Person_PhoneNumber : public ::google::protobuf::Message /* @@protoc_insert
     return *this;
   }
   #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
   static const ::google::protobuf::Descriptor* descriptor();
   static const Person_PhoneNumber& default_instance();
 
@@ -163,8 +164,7 @@ class Person_PhoneNumber : public ::google::protobuf::Message /* @@protoc_insert
 
   // accessors -------------------------------------------------------
 
-  // required string number = 1;
-  bool has_number() const;
+  // string number = 1;
   void clear_number();
   static const int kNumberFieldNumber = 1;
   const ::std::string& number() const;
@@ -178,8 +178,7 @@ class Person_PhoneNumber : public ::google::protobuf::Message /* @@protoc_insert
   ::std::string* release_number();
   void set_allocated_number(::std::string* number);
 
-  // optional .Person.PhoneType type = 2 [default = MOBILE];
-  bool has_type() const;
+  // .Person.PhoneType type = 2;
   void clear_type();
   static const int kTypeFieldNumber = 2;
   ::Person_PhoneType type() const;
@@ -187,18 +186,16 @@ class Person_PhoneNumber : public ::google::protobuf::Message /* @@protoc_insert
 
   // @@protoc_insertion_point(class_scope:Person.PhoneNumber)
  private:
-  void set_has_number();
-  void clear_has_number();
-  void set_has_type();
-  void clear_has_type();
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable int _cached_size_;
   ::google::protobuf::internal::ArenaStringPtr number_;
   int type_;
+  mutable int _cached_size_;
   friend struct protobuf_person_2eproto::TableStruct;
 };
+// -------------------------------------------------------------------
+
+
 // -------------------------------------------------------------------
 
 class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(class_definition:Person) */ {
@@ -227,13 +224,6 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
     return *this;
   }
   #endif
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _internal_metadata_.unknown_fields();
-  }
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return _internal_metadata_.mutable_unknown_fields();
-  }
-
   static const ::google::protobuf::Descriptor* descriptor();
   static const Person& default_instance();
 
@@ -242,7 +232,7 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
                &_Person_default_instance_);
   }
   static PROTOBUF_CONSTEXPR int const kIndexInFileMessages =
-    1;
+    2;
 
   void Swap(Person* other);
   friend void swap(Person& a, Person& b) {
@@ -331,8 +321,16 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   const ::google::protobuf::RepeatedPtrField< ::Person_PhoneNumber >&
       phones() const;
 
-  // required string name = 1;
-  bool has_name() const;
+  // map<int32, string> codes = 5;
+  int codes_size() const;
+  void clear_codes();
+  static const int kCodesFieldNumber = 5;
+  const ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >&
+      codes() const;
+  ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >*
+      mutable_codes();
+
+  // string name = 1;
   void clear_name();
   static const int kNameFieldNumber = 1;
   const ::std::string& name() const;
@@ -346,8 +344,7 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_name();
   void set_allocated_name(::std::string* name);
 
-  // optional string email = 3;
-  bool has_email() const;
+  // string email = 3;
   void clear_email();
   static const int kEmailFieldNumber = 3;
   const ::std::string& email() const;
@@ -361,8 +358,7 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::std::string* release_email();
   void set_allocated_email(::std::string* email);
 
-  // required int32 id = 2;
-  bool has_id() const;
+  // int32 id = 2;
   void clear_id();
   static const int kIdFieldNumber = 2;
   ::google::protobuf::int32 id() const;
@@ -370,23 +366,40 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 
   // @@protoc_insertion_point(class_scope:Person)
  private:
-  void set_has_name();
-  void clear_has_name();
-  void set_has_id();
-  void clear_has_id();
-  void set_has_email();
-  void clear_has_email();
-
-  // helper for ByteSizeLong()
-  size_t RequiredFieldsByteSizeFallback() const;
 
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
-  ::google::protobuf::internal::HasBits<1> _has_bits_;
-  mutable int _cached_size_;
   ::google::protobuf::RepeatedPtrField< ::Person_PhoneNumber > phones_;
+  public:
+  class Person_CodesEntry : public ::google::protobuf::internal::MapEntry<Person_CodesEntry, 
+      ::google::protobuf::int32, ::std::string,
+      ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      0 > {
+  public:
+    typedef ::google::protobuf::internal::MapEntry<Person_CodesEntry, 
+      ::google::protobuf::int32, ::std::string,
+      ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      0 > SuperType;
+    Person_CodesEntry();
+    Person_CodesEntry(::google::protobuf::Arena* arena);
+    void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;
+    void MergeFrom(const Person_CodesEntry& other);
+    static const Message* internal_default_instance() { return reinterpret_cast<const Message*>(&_Person_CodesEntry_default_instance_); }
+    ::google::protobuf::Metadata GetMetadata() const;
+  };
+  private:
+  ::google::protobuf::internal::MapField<
+      Person_CodesEntry,
+      ::google::protobuf::int32, ::std::string,
+      ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
+      ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
+      0 > codes_;
+  private:
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr email_;
   ::google::protobuf::int32 id_;
+  mutable int _cached_size_;
   friend struct protobuf_person_2eproto::TableStruct;
 };
 // ===================================================================
@@ -401,32 +414,22 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
 #endif  // __GNUC__
 // Person_PhoneNumber
 
-// required string number = 1;
-inline bool Person_PhoneNumber::has_number() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Person_PhoneNumber::set_has_number() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Person_PhoneNumber::clear_has_number() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+// string number = 1;
 inline void Person_PhoneNumber::clear_number() {
   number_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_number();
 }
 inline const ::std::string& Person_PhoneNumber::number() const {
   // @@protoc_insertion_point(field_get:Person.PhoneNumber.number)
   return number_.GetNoArena();
 }
 inline void Person_PhoneNumber::set_number(const ::std::string& value) {
-  set_has_number();
+  
   number_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:Person.PhoneNumber.number)
 }
 #if LANG_CXX11
 inline void Person_PhoneNumber::set_number(::std::string&& value) {
-  set_has_number();
+  
   number_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:Person.PhoneNumber.number)
@@ -434,91 +437,72 @@ inline void Person_PhoneNumber::set_number(::std::string&& value) {
 #endif
 inline void Person_PhoneNumber::set_number(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_number();
+  
   number_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:Person.PhoneNumber.number)
 }
 inline void Person_PhoneNumber::set_number(const char* value, size_t size) {
-  set_has_number();
+  
   number_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:Person.PhoneNumber.number)
 }
 inline ::std::string* Person_PhoneNumber::mutable_number() {
-  set_has_number();
+  
   // @@protoc_insertion_point(field_mutable:Person.PhoneNumber.number)
   return number_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Person_PhoneNumber::release_number() {
   // @@protoc_insertion_point(field_release:Person.PhoneNumber.number)
-  clear_has_number();
+  
   return number_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Person_PhoneNumber::set_allocated_number(::std::string* number) {
   if (number != NULL) {
-    set_has_number();
+    
   } else {
-    clear_has_number();
+    
   }
   number_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), number);
   // @@protoc_insertion_point(field_set_allocated:Person.PhoneNumber.number)
 }
 
-// optional .Person.PhoneType type = 2 [default = MOBILE];
-inline bool Person_PhoneNumber::has_type() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void Person_PhoneNumber::set_has_type() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Person_PhoneNumber::clear_has_type() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+// .Person.PhoneType type = 2;
 inline void Person_PhoneNumber::clear_type() {
   type_ = 0;
-  clear_has_type();
 }
 inline ::Person_PhoneType Person_PhoneNumber::type() const {
   // @@protoc_insertion_point(field_get:Person.PhoneNumber.type)
   return static_cast< ::Person_PhoneType >(type_);
 }
 inline void Person_PhoneNumber::set_type(::Person_PhoneType value) {
-  assert(::Person_PhoneType_IsValid(value));
-  set_has_type();
+  
   type_ = value;
   // @@protoc_insertion_point(field_set:Person.PhoneNumber.type)
 }
 
 // -------------------------------------------------------------------
 
+// -------------------------------------------------------------------
+
 // Person
 
-// required string name = 1;
-inline bool Person::has_name() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void Person::set_has_name() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void Person::clear_has_name() {
-  _has_bits_[0] &= ~0x00000001u;
-}
+// string name = 1;
 inline void Person::clear_name() {
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_name();
 }
 inline const ::std::string& Person::name() const {
   // @@protoc_insertion_point(field_get:Person.name)
   return name_.GetNoArena();
 }
 inline void Person::set_name(const ::std::string& value) {
-  set_has_name();
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:Person.name)
 }
 #if LANG_CXX11
 inline void Person::set_name(::std::string&& value) {
-  set_has_name();
+  
   name_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:Person.name)
@@ -526,86 +510,66 @@ inline void Person::set_name(::std::string&& value) {
 #endif
 inline void Person::set_name(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_name();
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:Person.name)
 }
 inline void Person::set_name(const char* value, size_t size) {
-  set_has_name();
+  
   name_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:Person.name)
 }
 inline ::std::string* Person::mutable_name() {
-  set_has_name();
+  
   // @@protoc_insertion_point(field_mutable:Person.name)
   return name_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Person::release_name() {
   // @@protoc_insertion_point(field_release:Person.name)
-  clear_has_name();
+  
   return name_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Person::set_allocated_name(::std::string* name) {
   if (name != NULL) {
-    set_has_name();
+    
   } else {
-    clear_has_name();
+    
   }
   name_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), name);
   // @@protoc_insertion_point(field_set_allocated:Person.name)
 }
 
-// required int32 id = 2;
-inline bool Person::has_id() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void Person::set_has_id() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void Person::clear_has_id() {
-  _has_bits_[0] &= ~0x00000004u;
-}
+// int32 id = 2;
 inline void Person::clear_id() {
   id_ = 0;
-  clear_has_id();
 }
 inline ::google::protobuf::int32 Person::id() const {
   // @@protoc_insertion_point(field_get:Person.id)
   return id_;
 }
 inline void Person::set_id(::google::protobuf::int32 value) {
-  set_has_id();
+  
   id_ = value;
   // @@protoc_insertion_point(field_set:Person.id)
 }
 
-// optional string email = 3;
-inline bool Person::has_email() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void Person::set_has_email() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void Person::clear_has_email() {
-  _has_bits_[0] &= ~0x00000002u;
-}
+// string email = 3;
 inline void Person::clear_email() {
   email_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  clear_has_email();
 }
 inline const ::std::string& Person::email() const {
   // @@protoc_insertion_point(field_get:Person.email)
   return email_.GetNoArena();
 }
 inline void Person::set_email(const ::std::string& value) {
-  set_has_email();
+  
   email_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), value);
   // @@protoc_insertion_point(field_set:Person.email)
 }
 #if LANG_CXX11
 inline void Person::set_email(::std::string&& value) {
-  set_has_email();
+  
   email_.SetNoArena(
     &::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::move(value));
   // @@protoc_insertion_point(field_set_rvalue:Person.email)
@@ -613,31 +577,31 @@ inline void Person::set_email(::std::string&& value) {
 #endif
 inline void Person::set_email(const char* value) {
   GOOGLE_DCHECK(value != NULL);
-  set_has_email();
+  
   email_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), ::std::string(value));
   // @@protoc_insertion_point(field_set_char:Person.email)
 }
 inline void Person::set_email(const char* value, size_t size) {
-  set_has_email();
+  
   email_.SetNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(),
       ::std::string(reinterpret_cast<const char*>(value), size));
   // @@protoc_insertion_point(field_set_pointer:Person.email)
 }
 inline ::std::string* Person::mutable_email() {
-  set_has_email();
+  
   // @@protoc_insertion_point(field_mutable:Person.email)
   return email_.MutableNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline ::std::string* Person::release_email() {
   // @@protoc_insertion_point(field_release:Person.email)
-  clear_has_email();
+  
   return email_.ReleaseNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
 }
 inline void Person::set_allocated_email(::std::string* email) {
   if (email != NULL) {
-    set_has_email();
+    
   } else {
-    clear_has_email();
+    
   }
   email_.SetAllocatedNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), email);
   // @@protoc_insertion_point(field_set_allocated:Person.email)
@@ -673,10 +637,30 @@ Person::phones() const {
   return phones_;
 }
 
+// map<int32, string> codes = 5;
+inline int Person::codes_size() const {
+  return codes_.size();
+}
+inline void Person::clear_codes() {
+  codes_.Clear();
+}
+inline const ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >&
+Person::codes() const {
+  // @@protoc_insertion_point(field_map:Person.codes)
+  return codes_.GetMap();
+}
+inline ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >*
+Person::mutable_codes() {
+  // @@protoc_insertion_point(field_mutable_map:Person.codes)
+  return codes_.MutableMap();
+}
+
 #ifdef __GNUC__
   #pragma GCC diagnostic pop
 #endif  // __GNUC__
 #endif  // !PROTOBUF_INLINE_NOT_IN_HEADERS
+// -------------------------------------------------------------------
+
 // -------------------------------------------------------------------
 
 

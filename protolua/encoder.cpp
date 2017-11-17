@@ -57,8 +57,8 @@ bool EncodeRepeated(Message* message, const FieldDescriptor* field, lua_State* L
     for (int i = 0; i < count; i++)
     {
         lua_geti(L, index, i + 1);
-        PROTO_DO(EncodeMultiple(message, field, L, index + 1));
-        lua_remove(L, index + 1);
+        PROTO_DO(EncodeMultiple(message, field, L, lua_absindex(L, -1)));
+        lua_pop(L, 1);
     }
     return true;
 }
@@ -85,8 +85,8 @@ bool EncodeTable(Message* message, const FieldDescriptor* field, lua_State* L, i
     while (lua_next(L, index))
     {
         Message* submessage = reflection->AddMessage(message, field);
-        PROTO_DO(EncodeField(submessage, key, L, index + 1));
-        PROTO_DO(EncodeField(submessage, value, L, index + 2));
+        PROTO_DO(EncodeField(submessage, key, L, lua_absindex(L, -2)));
+        PROTO_DO(EncodeField(submessage, value, L, lua_absindex(L, -1)));
         lua_pop(L, 1);
     }
     return true;
@@ -215,8 +215,8 @@ bool EncodeMessage(Message* message, const Descriptor* descriptor, lua_State* L,
     {
         const FieldDescriptor* field = descriptor->field(i);
         lua_getfield(L, index, field->name().c_str());
-        PROTO_DO(EncodeField(message, field, L, index + 1));
-        lua_remove(L, index + 1);
+        PROTO_DO(EncodeField(message, field, L, lua_absindex(L, -1)));
+        lua_pop(L, 1);
     }
     return true;
 }
