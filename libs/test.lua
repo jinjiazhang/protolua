@@ -23,5 +23,9 @@ local data = proto.pack("Person", player.name, player.id, player.email, player.p
 local name, id, email, phones, subjects = proto.unpack("Person", data)
 
 serpent = require("serpent")
-print(serpent.block(clone))
-print(name, id, email, serpent.block(phones), serpent.block(subjects))
+print("clone:", serpent.block(clone))
+print("name:", name)
+print("id:", id)
+print("email:", email)
+print("phones:", serpent.block(phones))
+print("subjects:", serpent.block(subjects))

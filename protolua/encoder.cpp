@@ -223,7 +223,6 @@ bool EncodeMessage(Message* message, const Descriptor* descriptor, lua_State* L,
 
 bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_t* size)
 {
-    PROTO_ASSERT(index > 0);
     const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
@@ -233,6 +232,7 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
     Message* message = prototype->New();
     PROTO_ASSERT(message);
 
+    index = lua_absindex(L, index);
     PROTO_DO(EncodeMessage(message, descriptor, L, index));
     message->SerializeToArray(output, *size);
     *size = message->ByteSizeLong();
@@ -241,7 +241,6 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
 
 bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size)
 {
-    PROTO_ASSERT(start > 0 && end >= start);
     const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
@@ -251,6 +250,8 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
     Message* message = prototype->New();
     PROTO_ASSERT(message);
 
+    start = lua_absindex(L, start);
+    end = lua_absindex(L, end);
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
     for (int i = 0; i < (int)fields.size() && start + i <= end; i++)
     {
