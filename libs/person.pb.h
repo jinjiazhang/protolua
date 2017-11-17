@@ -178,7 +178,7 @@ class Person_PhoneNumber : public ::google::protobuf::Message /* @@protoc_insert
   ::std::string* release_number();
   void set_allocated_number(::std::string* number);
 
-  // optional .Person.PhoneType type = 2 [default = HOME];
+  // optional .Person.PhoneType type = 2 [default = MOBILE];
   bool has_type() const;
   void clear_type();
   static const int kTypeFieldNumber = 2;
@@ -464,7 +464,7 @@ inline void Person_PhoneNumber::set_allocated_number(::std::string* number) {
   // @@protoc_insertion_point(field_set_allocated:Person.PhoneNumber.number)
 }
 
-// optional .Person.PhoneType type = 2 [default = HOME];
+// optional .Person.PhoneType type = 2 [default = MOBILE];
 inline bool Person_PhoneNumber::has_type() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -475,7 +475,7 @@ inline void Person_PhoneNumber::clear_has_type() {
   _has_bits_[0] &= ~0x00000002u;
 }
 inline void Person_PhoneNumber::clear_type() {
-  type_ = 1;
+  type_ = 0;
   clear_has_type();
 }
 inline ::Person_PhoneType Person_PhoneNumber::type() const {

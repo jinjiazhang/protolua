@@ -126,15 +126,15 @@ namespace {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\014person.proto\"\311\001\n\006Person\022\014\n\004name\030\001 \002(\t\022"
+      "\n\014person.proto\"\313\001\n\006Person\022\014\n\004name\030\001 \002(\t\022"
       "\n\n\002id\030\002 \002(\005\022\r\n\005email\030\003 \001(\t\022#\n\006phones\030\004 \003"
-      "(\0132\023.Person.PhoneNumber\032D\n\013PhoneNumber\022\016"
-      "\n\006number\030\001 \002(\t\022%\n\004type\030\002 \001(\0162\021.Person.Ph"
-      "oneType:\004HOME\"+\n\tPhoneType\022\n\n\006MOBILE\020\000\022\010"
-      "\n\004HOME\020\001\022\010\n\004WORK\020\002"
+      "(\0132\023.Person.PhoneNumber\032F\n\013PhoneNumber\022\016"
+      "\n\006number\030\001 \002(\t\022\'\n\004type\030\002 \001(\0162\021.Person.Ph"
+      "oneType:\006MOBILE\"+\n\tPhoneType\022\n\n\006MOBILE\020\000"
+      "\022\010\n\004HOME\020\001\022\010\n\004WORK\020\002"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 218);
+      descriptor, 220);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "person.proto", &protobuf_RegisterTypes);
 }
@@ -209,7 +209,7 @@ Person_PhoneNumber::Person_PhoneNumber(const Person_PhoneNumber& from)
 void Person_PhoneNumber::SharedCtor() {
   _cached_size_ = 0;
   number_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
-  type_ = 1;
+  type_ = 0;
 }
 
 Person_PhoneNumber::~Person_PhoneNumber() {
@@ -250,14 +250,11 @@ void Person_PhoneNumber::Clear() {
   // Prevent compiler warnings about cached_has_bits being unused
   (void) cached_has_bits;
 
-  cached_has_bits = _has_bits_[0];
-  if (cached_has_bits & 3u) {
-    if (cached_has_bits & 0x00000001u) {
-      GOOGLE_DCHECK(!number_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
-      (*number_.UnsafeRawStringPointer())->clear();
-    }
-    type_ = 1;
+  if (has_number()) {
+    GOOGLE_DCHECK(!number_.IsDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited()));
+    (*number_.UnsafeRawStringPointer())->clear();
   }
+  type_ = 0;
   _has_bits_.Clear();
   _internal_metadata_.Clear();
 }
@@ -288,7 +285,7 @@ bool Person_PhoneNumber::MergePartialFromCodedStream(
         break;
       }
 
-      // optional .Person.PhoneType type = 2 [default = HOME];
+      // optional .Person.PhoneType type = 2 [default = MOBILE];
       case 2: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(16u /* 16 & 0xFF */)) {
@@ -345,7 +342,7 @@ void Person_PhoneNumber::SerializeWithCachedSizes(
       1, this->number(), output);
   }
 
-  // optional .Person.PhoneType type = 2 [default = HOME];
+  // optional .Person.PhoneType type = 2 [default = MOBILE];
   if (cached_has_bits & 0x00000002u) {
     ::google::protobuf::internal::WireFormatLite::WriteEnum(
       2, this->type(), output);
@@ -377,7 +374,7 @@ void Person_PhoneNumber::SerializeWithCachedSizes(
         1, this->number(), target);
   }
 
-  // optional .Person.PhoneType type = 2 [default = HOME];
+  // optional .Person.PhoneType type = 2 [default = MOBILE];
   if (cached_has_bits & 0x00000002u) {
     target = ::google::protobuf::internal::WireFormatLite::WriteEnumToArray(
       2, this->type(), target);
@@ -406,7 +403,7 @@ size_t Person_PhoneNumber::ByteSizeLong() const {
       ::google::protobuf::internal::WireFormatLite::StringSize(
         this->number());
   }
-  // optional .Person.PhoneType type = 2 [default = HOME];
+  // optional .Person.PhoneType type = 2 [default = MOBILE];
   if (has_type()) {
     total_size += 1 +
       ::google::protobuf::internal::WireFormatLite::EnumSize(this->type());
@@ -557,7 +554,7 @@ void Person_PhoneNumber::set_allocated_number(::std::string* number) {
   // @@protoc_insertion_point(field_set_allocated:Person.PhoneNumber.number)
 }
 
-// optional .Person.PhoneType type = 2 [default = HOME];
+// optional .Person.PhoneType type = 2 [default = MOBILE];
 bool Person_PhoneNumber::has_type() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -568,7 +565,7 @@ void Person_PhoneNumber::clear_has_type() {
   _has_bits_[0] &= ~0x00000002u;
 }
 void Person_PhoneNumber::clear_type() {
-  type_ = 1;
+  type_ = 0;
   clear_has_type();
 }
 ::Person_PhoneType Person_PhoneNumber::type() const {

@@ -1,132 +1,126 @@
 #include "proto.h"
 
-bool DecodeField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeSingle(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeNumber(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeInteger(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeBoolean(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeString(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeTable(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
-bool DecodeMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag);
+bool DecodeField(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeRepeated(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index);
+bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_State* L);
 
-bool DefaultField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L);
-bool DefaultMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L);
-bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State* L);
-bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State* L);
-
-
-bool DefaultField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L)
-{
-    if (field->is_map() || field->is_repeated())
-    {
-        lua_newtable(L);
-        return true;
-    }
-
-    switch (field->type())
-    {
-    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
-        lua_pushnumber(L, field->default_value_double());
-        break;
-    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
-        lua_pushnumber(L, field->default_value_float());
-        break;
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
-    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-        lua_pushinteger(L, field->default_value_int64());
-        break;
-    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-        lua_pushinteger(L, field->default_value_int32());
-        break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
-        lua_pushinteger(L, field->default_value_uint64());
-        break;
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
-        lua_pushinteger(L, field->default_value_uint32());
-        break;
-    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
-        lua_pushinteger(L, field->default_value_enum()->number());
-        break;
-    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
-        lua_pushboolean(L, field->default_value_bool());
-        break;
-    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
-    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
-        lua_pushlstring(L, field->default_value_string().c_str(), field->default_value_string().size());
-        break;
-    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
-        PROTO_DO(DefaultMessage(field, input, L));
-        break;
-    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
-    default:
-        return false;
-    }
-    return true;
-}
-
-bool DefaultMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L)
-{
-    string type_name = field->message_type()->full_name();
-    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
-    PROTO_ASSERT(message);
-
-    lua_newtable(L);
-    for (int i = 0; i < message->field_count(); i++)
-    {
-        const FieldDescriptor* field = message->field(i);
-        lua_pushstring(L, field->name().c_str());
-        PROTO_DO(DefaultField(field, input, L));
-        lua_settable(L, -3);
-    }
-    return true;
-}
-
-bool DecodeField(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
+bool DecodeField(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     if (field->is_map())
-        return DecodeTable(field, input, L, tag);
+        return DecodeTable(message, field, L);
     else if (field->is_required())
-        return DecodeSingle(field, input, L, tag);
+        return DecodeRequired(message, field, L);
     else if (field->is_optional())
-        return DecodeSingle(field, input, L, tag);
+        return DecodeOptional(message, field, L);
     else if (field->is_repeated())
-        return DecodeRepeated(field, input, L, tag);
+        return DecodeRepeated(message, field, L);
     else
         return false;
 }
 
-bool DecodeSingle(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
+bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
+    const Reflection* reflection = message.GetReflection();
+    if (!reflection->HasField(message, field)) {
+        ProtoError("DecodeRequired field nil, field=%s\n", field->full_name().c_str());
+    }
+
+    return DecodeSingle(message, field, L);
+}
+
+bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_State* L)
+{
+    return DecodeSingle(message, field, L);
+}
+
+bool DecodeRepeated(const Message& message, const FieldDescriptor* field, lua_State* L)
+{
+    const Reflection* reflection = message.GetReflection();
+    int field_size = reflection->FieldSize(message, field);
+    
+    lua_newtable(L);
+    for (int index = 0; index < field_size; index++)
+    {
+        PROTO_DO(DecodeMultiple(message, field, L, index));
+        lua_seti(L, -2, index + 1);
+    }
+    return true;
+}
+
+bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State* L)
+{
+    const Reflection* reflection = message.GetReflection();
+    int field_size = reflection->FieldSize(message, field);
+
+    const Descriptor* descriptor = field->message_type();
+    PROTO_ASSERT(descriptor->field_count() == 2);
+    const FieldDescriptor* key = descriptor->field(0);
+    const FieldDescriptor* value = descriptor->field(1);
+
+    lua_newtable(L);
+    for (int index = 0; index < field_size; index++)
+    {
+        const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
+        PROTO_DO(DecodeField(submessage, key, L));
+        PROTO_DO(DecodeField(submessage, value, L));
+        lua_settable(L, -3);
+    }
+    return true;
+}
+
+bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_State* L)
+{
+    const Reflection* reflection = message.GetReflection();
     switch (field->type())
     {
     case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+        lua_pushnumber(L, reflection->GetDouble(message, field));
+        break;
     case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
-        return DecodeNumber(field, input, L, tag);
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
+        lua_pushnumber(L, reflection->GetFloat(message, field));
+        break;
     case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
     case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
+    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+        lua_pushinteger(L, reflection->GetInt32(message, field));
+        break;
+    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
+    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+        lua_pushinteger(L, reflection->GetUInt32(message, field));
+        break;
+    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
     case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
+    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+        lua_pushinteger(L, reflection->GetInt64(message, field));
+        break;
+    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
+    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+        lua_pushinteger(L, reflection->GetUInt64(message, field));
+        break;
     case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
-        return DecodeInteger(field, input, L, tag);
+        lua_pushinteger(L, reflection->GetEnumValue(message, field));
+        break;
     case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
-        return DecodeBoolean(field, input, L, tag);
+        lua_pushboolean(L, reflection->GetBool(message, field));
+        break;
     case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
     case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
-        return DecodeString(field, input, L, tag);
+        {
+            string& value = reflection->GetString(message, field);
+            lua_pushlstring(L, value.c_str(), value.size());
+        }
+        break;
     case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
-        return DecodeMessage(field, input, L, tag);
+        {
+            const Message& submessage = reflection->GetMessage(message, field);
+            PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
+        }
+        break;
     case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
         return false;
@@ -134,267 +128,107 @@ bool DecodeSingle(const FieldDescriptor* field, CodedInputStream* input, lua_Sta
     return true;
 }
 
-#define PROTO_READ_PRIMITIVE(CType, WType, input, value) \
-    do { \
-        CType temp; \
-        PROTO_DO((WireFormatLite::ReadPrimitive<CType, WType>((input), &temp))); \
-        *(value) = temp; \
-    } while (0);
-    
-bool DecodeNumber(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
+bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index)
 {
-    lua_Number value;
+    const Reflection* reflection = message.GetReflection();
     switch (field->type())
     {
     case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
-        PROTO_READ_PRIMITIVE(double, WireFormatLite::TYPE_DOUBLE, input, &value);
+        lua_pushnumber(L, reflection->GetRepeatedDouble(message, field, index));
         break;
     case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
-        PROTO_READ_PRIMITIVE(float, WireFormatLite::TYPE_FLOAT, input, &value);
-        break;
-    default:
-        return false;
-    }
-
-    lua_pushnumber(L, value);
-    return true;
-}
-
-bool DecodeInteger(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
-{
-    lua_Integer value;
-    switch (field->type())
-    {
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_INT64, input, &value);
-        break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-        PROTO_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_UINT64, input, &value);
+        lua_pushnumber(L, reflection->GetRepeatedFloat(message, field, index));
         break;
     case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_INT32, input, &value);
+    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
+    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+        lua_pushinteger(L, reflection->GetRepeatedInt32(message, field, index));
         break;
     case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-        PROTO_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_UINT32, input, &value);
-        break;
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
-        PROTO_READ_PRIMITIVE(uint64, WireFormatLite::TYPE_FIXED64, input, &value);
-        break;
     case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
-        PROTO_READ_PRIMITIVE(uint32, WireFormatLite::TYPE_FIXED32, input, &value);
+        lua_pushinteger(L, reflection->GetRepeatedUInt32(message, field, index));
         break;
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
-        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SFIXED32, input, &value);
-        break;
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
-        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SFIXED64, input, &value);
-        break;
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-        PROTO_READ_PRIMITIVE(int32, WireFormatLite::TYPE_SINT32, input, &value);
-        break;
+    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
     case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-        PROTO_READ_PRIMITIVE(int64, WireFormatLite::TYPE_SINT64, input, &value);
+    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+        lua_pushinteger(L, reflection->GetRepeatedInt64(message, field, index));
+        break;
+    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
+    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+        lua_pushinteger(L, reflection->GetRepeatedUInt64(message, field, index));
         break;
     case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
-        PROTO_READ_PRIMITIVE(int, WireFormatLite::TYPE_ENUM, input, &value);
+        lua_pushinteger(L, reflection->GetRepeatedEnumValue(message, field, index));
         break;
+    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+        lua_pushboolean(L, reflection->GetRepeatedBool(message, field, index));
+        break;
+    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
+    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+        {
+            string& value = reflection->GetRepeatedString(message, field, index);
+            lua_pushlstring(L, value.c_str(), value.size());
+        }
+        break;
+    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+        {
+            const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
+            PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
+        }
+        break;
+    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
         return false;
     }
-
-    lua_pushinteger(L, value);
     return true;
 }
 
-bool DecodeBoolean(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
+bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_State* L)
 {
-    bool value;
-    PROTO_DO((WireFormatLite::ReadPrimitive<bool, WireFormatLite::TYPE_BOOL>(input, &value)));
-    lua_pushboolean(L, value);
-    return true;
-}
-
-bool DecodeString(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
-{
-    string value;
-    PROTO_DO(WireFormatLite::ReadString(input, &value));
-    lua_pushlstring(L, value.c_str(), value.size());
-    return true;
-}
-
-bool DecodeRepeated(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
-{
-    lua_Integer index = 1;
     lua_newtable(L);
-
-    WireFormatLite::WireType type = WireFormatLite::GetTagWireType(tag);
-    if (field->is_packable() && type == WireFormatLite::WIRETYPE_LENGTH_DELIMITED) // [packed=true]
+    for (int i = 0; i < descriptor->field_count(); i++)
     {
-        int length;
-        PROTO_DO(input->ReadVarintSizeAsInt(&length));
-        CodedInputStream::Limit limit = input->PushLimit(length);
-        while (input->BytesUntilLimit() > 0) {
-            PROTO_DO(DecodeSingle(field, input, L, tag));
-            lua_seti(L, -2, index);
-            ++index;
-        }
-        input->PopLimit(limit);
-    }
-    else // [packed=false]
-    {
-        do 
-        {
-            PROTO_DO(DecodeSingle(field, input, L, tag));
-            lua_seti(L, -2, index);
-            ++index;
-        } while (input->ExpectTag(tag));
-    }
-    return true;
-}
-
-bool DecodeTable(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
-{
-    string type_name = field->message_type()->full_name();
-    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
-    PROTO_ASSERT(message);
-    
-    const FieldDescriptor* key = message->field(0);
-    const FieldDescriptor* value = message->field(1);
-
-    int length;
-    uint32 key_tag;
-    uint32 value_tag;
-    lua_newtable(L);
-    do 
-    {
-        PROTO_DO(input->ReadVarintSizeAsInt(&length));
-        CodedInputStream::Limit limit = input->PushLimit(length);
-        key_tag = input->ReadTagNoLastTag();
-        PROTO_ASSERT(key_tag==WireFormat::MakeTag(key));
-        PROTO_DO(DecodeSingle(key, input, L, key_tag));
-        value_tag = input->ReadTagNoLastTag();
-        PROTO_ASSERT(value_tag==WireFormat::MakeTag(value));
-        PROTO_DO(DecodeSingle(value, input, L, value_tag));
-        lua_settable(L, -3);
-        input->PopLimit(limit);
-    } while (input->ExpectTag(tag));
-    return true;
-}
-
-bool DecodeMessage(const FieldDescriptor* field, CodedInputStream* input, lua_State* L, uint32 tag)
-{
-    string type_name = field->message_type()->full_name();
-    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(type_name);
-    PROTO_ASSERT(message);
-
-    int length;
-    PROTO_DO(input->ReadVarintSizeAsInt(&length));
-    CodedInputStream::Limit limit = input->PushLimit(length);
-    PROTO_DO(DecodeMessage(message, input, L));
-    input->PopLimit(limit);
-    return true;
-}
-
-bool DecodeMessage(const Descriptor* message, CodedInputStream* input, lua_State* L)
-{
-    uint32 tag;
-    std::set<int> numbers;
-    lua_newtable(L);
-    while (tag = input->ReadTagNoLastTag())
-    {
-        int number = WireFormatLite::GetTagFieldNumber(tag);
-        const FieldDescriptor* field = message->FindFieldByNumber(number);
-        if (field == NULL) // skip unknow field
-        {
-            WireFormat::SkipField(input, tag, NULL);
-            continue;
-        }
-
-        // PROTO_ASSERT(tag==WireFormat::MakeTag(field));
+        const FieldDescriptor* field = descriptor->field(i);
         lua_pushstring(L, field->name().c_str());
-        PROTO_DO(DecodeField(field, input, L, tag));
+        PROTO_DO(DecodeField(message, field, L));
         lua_settable(L, -3);
-        numbers.insert(field->number());
-    }
-
-    for (int i = 0; i < message->field_count(); i++)
-    {
-        const FieldDescriptor* field = message->field(i);
-        if (numbers.find(field->number()) == numbers.end())
-        {
-            lua_pushstring(L, field->name().c_str());
-            PROTO_DO(DefaultField(field, input, L));
-            lua_settable(L, -3);
-        }
-    }
-    return true;
-}
-
-bool AdjustStack(std::list<int>& sequence, lua_State* L, int number)
-{
-    int index = -1;
-    std::list<int>::reverse_iterator it = sequence.rbegin();
-    for (; it != sequence.rend(); ++it)
-    {
-        if (*it < number)
-            break;
-        --index;
-    }
-
-    sequence.insert(it.base(), number);
-    lua_insert(L, index);
-    return true;
-}
-
-bool UnpackMessage(const Descriptor* message, CodedInputStream* input, lua_State* L)
-{
-    uint32 tag;
-    std::set<int> numbers;
-    std::list<int> sequence;
-    while (tag = input->ReadTagNoLastTag())
-    {
-        int number = WireFormatLite::GetTagFieldNumber(tag);
-        const FieldDescriptor* field = message->FindFieldByNumber(number);
-        if (field == NULL) // skip unknow field
-        {
-            WireFormat::SkipField(input, tag, NULL);
-            continue;
-        }
-
-        // PROTO_ASSERT(tag==WireFormat::MakeTag(field));
-        PROTO_DO(DecodeField(field, input, L, tag));
-        PROTO_DO(AdjustStack(sequence, L, number));
-        numbers.insert(field->number());
-    }
-
-    for (int i = 0; i < message->field_count(); i++)
-    {
-        const FieldDescriptor* field = message->field(i);
-        if (numbers.find(field->number()) == numbers.end())
-        {
-            PROTO_DO(DefaultField(field, input, L));
-            PROTO_DO(AdjustStack(sequence, L, field->number()));
-        }
     }
     return true;
 }
 
 bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    PROTO_ASSERT(descriptor);
+
+    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    PROTO_ASSERT(prototype);
+
+    Message* message = prototype->New();
     PROTO_ASSERT(message);
 
-    ArrayInputStream buffer((void*)input, (int)size);
-    CodedInputStream stream(&buffer);
-    return DecodeMessage(message, &stream, L);
+    message->ParseFromArray(input, size);
+    return DecodeMessage(*message, descriptor, L);
 }
 
 bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* message = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    PROTO_ASSERT(descriptor);
+
+    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    PROTO_ASSERT(prototype);
+
+    Message* message = prototype->New();
     PROTO_ASSERT(message);
 
-    ArrayInputStream buffer((void*)input, (int)size);
-    CodedInputStream stream(&buffer);
-    return UnpackMessage(message, &stream, L);
+    message->ParseFromArray(input, size);
+
+    std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
+    for (int i = 0; i < (int)fields.size(); i++)
+    {
+        const FieldDescriptor* field = fields[i];
+        PROTO_DO(DecodeField(*message, field, L));
+    }
+    return true;
 }

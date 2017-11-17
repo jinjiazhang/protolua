@@ -231,7 +231,7 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
     PROTO_ASSERT(prototype);
 
     Message* message = prototype->New();
-    PROTO_ASSERT(prototype);
+    PROTO_ASSERT(message);
 
     PROTO_DO(EncodeMessage(message, descriptor, L, index));
     message->SerializeToArray(output, *size);
@@ -249,11 +249,12 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
     PROTO_ASSERT(prototype);
 
     Message* message = prototype->New();
-    PROTO_ASSERT(prototype);
+    PROTO_ASSERT(message);
 
-    for (int i = 0; i < descriptor->field_count() && start + i <= end; i++)
+    std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
+    for (int i = 0; i < (int)fields.size() && start + i <= end; i++)
     {
-        const FieldDescriptor* field = descriptor->field(i);
+        const FieldDescriptor* field = fields[i];
         PROTO_DO(EncodeField(message, field, L, start + i));
     }
 
