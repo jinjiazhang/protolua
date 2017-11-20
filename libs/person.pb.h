@@ -37,12 +37,12 @@
 class Person;
 class PersonDefaultTypeInternal;
 extern PersonDefaultTypeInternal _Person_default_instance_;
-class Person_CodesEntry;
-class Person_CodesEntryDefaultTypeInternal;
-extern Person_CodesEntryDefaultTypeInternal _Person_CodesEntry_default_instance_;
 class Person_PhoneNumber;
 class Person_PhoneNumberDefaultTypeInternal;
 extern Person_PhoneNumberDefaultTypeInternal _Person_PhoneNumber_default_instance_;
+class Person_SubjectsEntry;
+class Person_SubjectsEntryDefaultTypeInternal;
+extern Person_SubjectsEntryDefaultTypeInternal _Person_SubjectsEntry_default_instance_;
 
 namespace protobuf_person_2eproto {
 // Internal implementation detail -- do not call these.
@@ -321,14 +321,14 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   const ::google::protobuf::RepeatedPtrField< ::Person_PhoneNumber >&
       phones() const;
 
-  // map<int32, string> codes = 5;
-  int codes_size() const;
-  void clear_codes();
-  static const int kCodesFieldNumber = 5;
+  // map<int32, string> subjects = 5;
+  int subjects_size() const;
+  void clear_subjects();
+  static const int kSubjectsFieldNumber = 5;
   const ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >&
-      codes() const;
+      subjects() const;
   ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >*
-      mutable_codes();
+      mutable_subjects();
 
   // string name = 1;
   void clear_name();
@@ -370,31 +370,31 @@ class Person : public ::google::protobuf::Message /* @@protoc_insertion_point(cl
   ::google::protobuf::internal::InternalMetadataWithArena _internal_metadata_;
   ::google::protobuf::RepeatedPtrField< ::Person_PhoneNumber > phones_;
   public:
-  class Person_CodesEntry : public ::google::protobuf::internal::MapEntry<Person_CodesEntry, 
+  class Person_SubjectsEntry : public ::google::protobuf::internal::MapEntry<Person_SubjectsEntry, 
       ::google::protobuf::int32, ::std::string,
       ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
       0 > {
   public:
-    typedef ::google::protobuf::internal::MapEntry<Person_CodesEntry, 
+    typedef ::google::protobuf::internal::MapEntry<Person_SubjectsEntry, 
       ::google::protobuf::int32, ::std::string,
       ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
       0 > SuperType;
-    Person_CodesEntry();
-    Person_CodesEntry(::google::protobuf::Arena* arena);
+    Person_SubjectsEntry();
+    Person_SubjectsEntry(::google::protobuf::Arena* arena);
     void MergeFrom(const ::google::protobuf::Message& other) PROTOBUF_FINAL;
-    void MergeFrom(const Person_CodesEntry& other);
-    static const Message* internal_default_instance() { return reinterpret_cast<const Message*>(&_Person_CodesEntry_default_instance_); }
+    void MergeFrom(const Person_SubjectsEntry& other);
+    static const Message* internal_default_instance() { return reinterpret_cast<const Message*>(&_Person_SubjectsEntry_default_instance_); }
     ::google::protobuf::Metadata GetMetadata() const;
   };
   private:
   ::google::protobuf::internal::MapField<
-      Person_CodesEntry,
+      Person_SubjectsEntry,
       ::google::protobuf::int32, ::std::string,
       ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
       ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
-      0 > codes_;
+      0 > subjects_;
   private:
   ::google::protobuf::internal::ArenaStringPtr name_;
   ::google::protobuf::internal::ArenaStringPtr email_;
@@ -637,22 +637,22 @@ Person::phones() const {
   return phones_;
 }
 
-// map<int32, string> codes = 5;
-inline int Person::codes_size() const {
-  return codes_.size();
+// map<int32, string> subjects = 5;
+inline int Person::subjects_size() const {
+  return subjects_.size();
 }
-inline void Person::clear_codes() {
-  codes_.Clear();
+inline void Person::clear_subjects() {
+  subjects_.Clear();
 }
 inline const ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >&
-Person::codes() const {
-  // @@protoc_insertion_point(field_map:Person.codes)
-  return codes_.GetMap();
+Person::subjects() const {
+  // @@protoc_insertion_point(field_map:Person.subjects)
+  return subjects_.GetMap();
 }
 inline ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >*
-Person::mutable_codes() {
-  // @@protoc_insertion_point(field_mutable_map:Person.codes)
-  return codes_.MutableMap();
+Person::mutable_subjects() {
+  // @@protoc_insertion_point(field_mutable_map:Person.subjects)
+  return subjects_.MutableMap();
 }
 
 #ifdef __GNUC__

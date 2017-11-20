@@ -21,11 +21,11 @@ public:
  ::google::protobuf::internal::ExplicitlyConstructed<Person_PhoneNumber>
      _instance;
 } _Person_PhoneNumber_default_instance_;
-class Person_CodesEntryDefaultTypeInternal {
+class Person_SubjectsEntryDefaultTypeInternal {
 public:
- ::google::protobuf::internal::ExplicitlyConstructed<Person::Person_CodesEntry>
+ ::google::protobuf::internal::ExplicitlyConstructed<Person::Person_SubjectsEntry>
      _instance;
-} _Person_CodesEntry_default_instance_;
+} _Person_SubjectsEntry_default_instance_;
 class PersonDefaultTypeInternal {
 public:
  ::google::protobuf::internal::ExplicitlyConstructed<Person>
@@ -75,7 +75,7 @@ const ::google::protobuf::uint32 TableStruct::offsets[] GOOGLE_ATTRIBUTE_SECTION
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Person, id_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Person, email_),
   GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Person, phones_),
-  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Person, codes_),
+  GOOGLE_PROTOBUF_GENERATED_MESSAGE_FIELD_OFFSET(Person, subjects_),
 };
 static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
   { 0, -1, sizeof(Person_PhoneNumber)},
@@ -84,7 +84,7 @@ static const ::google::protobuf::internal::MigrationSchema schemas[] GOOGLE_ATTR
 
 static ::google::protobuf::Message const * const file_default_instances[] = {
   reinterpret_cast<const ::google::protobuf::Message*>(&_Person_PhoneNumber_default_instance_),
-  reinterpret_cast<const ::google::protobuf::Message*>(&_Person_CodesEntry_default_instance_),
+  reinterpret_cast<const ::google::protobuf::Message*>(&_Person_SubjectsEntry_default_instance_),
   reinterpret_cast<const ::google::protobuf::Message*>(&_Person_default_instance_),
 };
 
@@ -96,7 +96,7 @@ void protobuf_AssignDescriptors() {
   AssignDescriptors(
       "person.proto", schemas, file_default_instances, TableStruct::offsets, factory,
       file_level_metadata, file_level_enum_descriptors, NULL);
-file_level_metadata[1].reflection = Person::Person_CodesEntry::CreateReflection(file_level_metadata[1].descriptor, _Person_CodesEntry_default_instance_._instance.get_mutable());
+file_level_metadata[1].reflection = Person::Person_SubjectsEntry::CreateReflection(file_level_metadata[1].descriptor, _Person_SubjectsEntry_default_instance_._instance.get_mutable());
 }
 
 void protobuf_AssignDescriptorsOnce() {
@@ -117,12 +117,12 @@ void TableStruct::InitDefaultsImpl() {
   ::google::protobuf::internal::InitProtobufDefaults();
   _Person_PhoneNumber_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Person_PhoneNumber_default_instance_);_Person_CodesEntry_default_instance_._instance.DefaultConstruct();
+      &_Person_PhoneNumber_default_instance_);_Person_SubjectsEntry_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Person_CodesEntry_default_instance_);_Person_default_instance_._instance.DefaultConstruct();
+      &_Person_SubjectsEntry_default_instance_);_Person_default_instance_._instance.DefaultConstruct();
   ::google::protobuf::internal::OnShutdownDestroyMessage(
-      &_Person_default_instance_);_Person_CodesEntry_default_instance_._instance.get_mutable()->set_default_instance(_Person_CodesEntry_default_instance_._instance.get_mutable());
-  _Person_CodesEntry_default_instance_._instance.get_mutable()->InitAsDefaultInstance();
+      &_Person_default_instance_);_Person_SubjectsEntry_default_instance_._instance.get_mutable()->set_default_instance(_Person_SubjectsEntry_default_instance_._instance.get_mutable());
+  _Person_SubjectsEntry_default_instance_._instance.get_mutable()->InitAsDefaultInstance();
 }
 
 void InitDefaults() {
@@ -133,17 +133,17 @@ namespace {
 void AddDescriptorsImpl() {
   InitDefaults();
   static const char descriptor[] GOOGLE_ATTRIBUTE_SECTION_VARIABLE(protodesc_cold) = {
-      "\n\014person.proto\"\224\002\n\006Person\022\014\n\004name\030\001 \001(\t\022"
+      "\n\014person.proto\"\235\002\n\006Person\022\014\n\004name\030\001 \001(\t\022"
       "\n\n\002id\030\002 \001(\005\022\r\n\005email\030\003 \001(\t\022#\n\006phones\030\004 \003"
-      "(\0132\023.Person.PhoneNumber\022!\n\005codes\030\005 \003(\0132\022"
-      ".Person.CodesEntry\032>\n\013PhoneNumber\022\016\n\006num"
-      "ber\030\001 \001(\t\022\037\n\004type\030\002 \001(\0162\021.Person.PhoneTy"
-      "pe\032,\n\nCodesEntry\022\013\n\003key\030\001 \001(\005\022\r\n\005value\030\002"
-      " \001(\t:\0028\001\"+\n\tPhoneType\022\n\n\006MOBILE\020\000\022\010\n\004HOM"
-      "E\020\001\022\010\n\004WORK\020\002b\006proto3"
+      "(\0132\023.Person.PhoneNumber\022\'\n\010subjects\030\005 \003("
+      "\0132\025.Person.SubjectsEntry\032>\n\013PhoneNumber\022"
+      "\016\n\006number\030\001 \001(\t\022\037\n\004type\030\002 \001(\0162\021.Person.P"
+      "honeType\032/\n\rSubjectsEntry\022\013\n\003key\030\001 \001(\005\022\r"
+      "\n\005value\030\002 \001(\t:\0028\001\"+\n\tPhoneType\022\n\n\006MOBILE"
+      "\020\000\022\010\n\004HOME\020\001\022\010\n\004WORK\020\002b\006proto3"
   };
   ::google::protobuf::DescriptorPool::InternalAddGeneratedFile(
-      descriptor, 301);
+      descriptor, 310);
   ::google::protobuf::MessageFactory::InternalRegisterGeneratedFile(
     "person.proto", &protobuf_RegisterTypes);
 }
@@ -554,17 +554,17 @@ void Person_PhoneNumber::set_type(::Person_PhoneType value) {
 
 // ===================================================================
 
-Person::Person_CodesEntry::Person_CodesEntry() {}
-Person::Person_CodesEntry::Person_CodesEntry(::google::protobuf::Arena* arena) : SuperType(arena) {}
-::google::protobuf::Metadata Person::Person_CodesEntry::GetMetadata() const {
+Person::Person_SubjectsEntry::Person_SubjectsEntry() {}
+Person::Person_SubjectsEntry::Person_SubjectsEntry(::google::protobuf::Arena* arena) : SuperType(arena) {}
+::google::protobuf::Metadata Person::Person_SubjectsEntry::GetMetadata() const {
   protobuf_person_2eproto::protobuf_AssignDescriptorsOnce();
   return protobuf_person_2eproto::file_level_metadata[1];
 }
-void Person::Person_CodesEntry::MergeFrom(
+void Person::Person_SubjectsEntry::MergeFrom(
     const ::google::protobuf::Message& other) {
   ::google::protobuf::Message::MergeFrom(other);
 }
-void Person::Person_CodesEntry::MergeFrom(const Person_CodesEntry& other) {
+void Person::Person_SubjectsEntry::MergeFrom(const Person_SubjectsEntry& other) {
   MergeFromInternal(other);
 }
 
@@ -578,7 +578,7 @@ const int Person::kNameFieldNumber;
 const int Person::kIdFieldNumber;
 const int Person::kEmailFieldNumber;
 const int Person::kPhonesFieldNumber;
-const int Person::kCodesFieldNumber;
+const int Person::kSubjectsFieldNumber;
 #endif  // !defined(_MSC_VER) || _MSC_VER >= 1900
 
 Person::Person()
@@ -595,7 +595,7 @@ Person::Person(const Person& from)
       phones_(from.phones_),
       _cached_size_(0) {
   _internal_metadata_.MergeFrom(from._internal_metadata_);
-  codes_.MergeFrom(from.codes_);
+  subjects_.MergeFrom(from.subjects_);
   name_.UnsafeSetDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   if (from.name().size() > 0) {
     name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
@@ -655,7 +655,7 @@ void Person::Clear() {
   (void) cached_has_bits;
 
   phones_.Clear();
-  codes_.Clear();
+  subjects_.Clear();
   name_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   email_.ClearToEmptyNoArena(&::google::protobuf::internal::GetEmptyStringAlreadyInited());
   id_ = 0;
@@ -730,23 +730,23 @@ bool Person::MergePartialFromCodedStream(
         break;
       }
 
-      // map<int32, string> codes = 5;
+      // map<int32, string> subjects = 5;
       case 5: {
         if (static_cast< ::google::protobuf::uint8>(tag) ==
             static_cast< ::google::protobuf::uint8>(42u /* 42 & 0xFF */)) {
-          Person_CodesEntry::Parser< ::google::protobuf::internal::MapField<
-              Person_CodesEntry,
+          Person_SubjectsEntry::Parser< ::google::protobuf::internal::MapField<
+              Person_SubjectsEntry,
               ::google::protobuf::int32, ::std::string,
               ::google::protobuf::internal::WireFormatLite::TYPE_INT32,
               ::google::protobuf::internal::WireFormatLite::TYPE_STRING,
               0 >,
-            ::google::protobuf::Map< ::google::protobuf::int32, ::std::string > > parser(&codes_);
+            ::google::protobuf::Map< ::google::protobuf::int32, ::std::string > > parser(&subjects_);
           DO_(::google::protobuf::internal::WireFormatLite::ReadMessageNoVirtual(
               input, &parser));
           DO_(::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
             parser.value().data(), static_cast<int>(parser.value().length()),
             ::google::protobuf::internal::WireFormatLite::PARSE,
-            "Person.CodesEntry.value"));
+            "Person.SubjectsEntry.value"));
         } else {
           goto handle_unusual;
         }
@@ -811,8 +811,8 @@ void Person::SerializeWithCachedSizes(
       4, this->phones(static_cast<int>(i)), output);
   }
 
-  // map<int32, string> codes = 5;
-  if (!this->codes().empty()) {
+  // map<int32, string> subjects = 5;
+  if (!this->subjects().empty()) {
     typedef ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_pointer
         ConstPtr;
     typedef ::google::protobuf::internal::SortItem< ::google::protobuf::int32, ConstPtr > SortItem;
@@ -822,36 +822,36 @@ void Person::SerializeWithCachedSizes(
         ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           p->second.data(), static_cast<int>(p->second.length()),
           ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Person.CodesEntry.value");
+          "Person.SubjectsEntry.value");
       }
     };
 
     if (output->IsSerializationDeterministic() &&
-        this->codes().size() > 1) {
+        this->subjects().size() > 1) {
       ::google::protobuf::scoped_array<SortItem> items(
-          new SortItem[this->codes().size()]);
+          new SortItem[this->subjects().size()]);
       typedef ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::size_type size_type;
       size_type n = 0;
       for (::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_iterator
-          it = this->codes().begin();
-          it != this->codes().end(); ++it, ++n) {
+          it = this->subjects().begin();
+          it != this->subjects().end(); ++it, ++n) {
         items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
       }
       ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
-      ::google::protobuf::scoped_ptr<Person_CodesEntry> entry;
+      ::google::protobuf::scoped_ptr<Person_SubjectsEntry> entry;
       for (size_type i = 0; i < n; i++) {
-        entry.reset(codes_.NewEntryWrapper(
+        entry.reset(subjects_.NewEntryWrapper(
             items[static_cast<ptrdiff_t>(i)].second->first, items[static_cast<ptrdiff_t>(i)].second->second));
         ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
             5, *entry, output);
         Utf8Check::Check(items[static_cast<ptrdiff_t>(i)].second);
       }
     } else {
-      ::google::protobuf::scoped_ptr<Person_CodesEntry> entry;
+      ::google::protobuf::scoped_ptr<Person_SubjectsEntry> entry;
       for (::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_iterator
-          it = this->codes().begin();
-          it != this->codes().end(); ++it) {
-        entry.reset(codes_.NewEntryWrapper(
+          it = this->subjects().begin();
+          it != this->subjects().end(); ++it) {
+        entry.reset(subjects_.NewEntryWrapper(
             it->first, it->second));
         ::google::protobuf::internal::WireFormatLite::WriteMessageMaybeToArray(
             5, *entry, output);
@@ -909,8 +909,8 @@ void Person::SerializeWithCachedSizes(
         4, this->phones(static_cast<int>(i)), deterministic, target);
   }
 
-  // map<int32, string> codes = 5;
-  if (!this->codes().empty()) {
+  // map<int32, string> subjects = 5;
+  if (!this->subjects().empty()) {
     typedef ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_pointer
         ConstPtr;
     typedef ::google::protobuf::internal::SortItem< ::google::protobuf::int32, ConstPtr > SortItem;
@@ -920,25 +920,25 @@ void Person::SerializeWithCachedSizes(
         ::google::protobuf::internal::WireFormatLite::VerifyUtf8String(
           p->second.data(), static_cast<int>(p->second.length()),
           ::google::protobuf::internal::WireFormatLite::SERIALIZE,
-          "Person.CodesEntry.value");
+          "Person.SubjectsEntry.value");
       }
     };
 
     if (deterministic &&
-        this->codes().size() > 1) {
+        this->subjects().size() > 1) {
       ::google::protobuf::scoped_array<SortItem> items(
-          new SortItem[this->codes().size()]);
+          new SortItem[this->subjects().size()]);
       typedef ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::size_type size_type;
       size_type n = 0;
       for (::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_iterator
-          it = this->codes().begin();
-          it != this->codes().end(); ++it, ++n) {
+          it = this->subjects().begin();
+          it != this->subjects().end(); ++it, ++n) {
         items[static_cast<ptrdiff_t>(n)] = SortItem(&*it);
       }
       ::std::sort(&items[0], &items[static_cast<ptrdiff_t>(n)], Less());
-      ::google::protobuf::scoped_ptr<Person_CodesEntry> entry;
+      ::google::protobuf::scoped_ptr<Person_SubjectsEntry> entry;
       for (size_type i = 0; i < n; i++) {
-        entry.reset(codes_.NewEntryWrapper(
+        entry.reset(subjects_.NewEntryWrapper(
             items[static_cast<ptrdiff_t>(i)].second->first, items[static_cast<ptrdiff_t>(i)].second->second));
         target = ::google::protobuf::internal::WireFormatLite::
                    InternalWriteMessageNoVirtualToArray(
@@ -947,11 +947,11 @@ void Person::SerializeWithCachedSizes(
         Utf8Check::Check(items[static_cast<ptrdiff_t>(i)].second);
       }
     } else {
-      ::google::protobuf::scoped_ptr<Person_CodesEntry> entry;
+      ::google::protobuf::scoped_ptr<Person_SubjectsEntry> entry;
       for (::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_iterator
-          it = this->codes().begin();
-          it != this->codes().end(); ++it) {
-        entry.reset(codes_.NewEntryWrapper(
+          it = this->subjects().begin();
+          it != this->subjects().end(); ++it) {
+        entry.reset(subjects_.NewEntryWrapper(
             it->first, it->second));
         target = ::google::protobuf::internal::WireFormatLite::
                    InternalWriteMessageNoVirtualToArray(
@@ -990,15 +990,15 @@ size_t Person::ByteSizeLong() const {
     }
   }
 
-  // map<int32, string> codes = 5;
+  // map<int32, string> subjects = 5;
   total_size += 1 *
-      ::google::protobuf::internal::FromIntSize(this->codes_size());
+      ::google::protobuf::internal::FromIntSize(this->subjects_size());
   {
-    ::google::protobuf::scoped_ptr<Person_CodesEntry> entry;
+    ::google::protobuf::scoped_ptr<Person_SubjectsEntry> entry;
     for (::google::protobuf::Map< ::google::protobuf::int32, ::std::string >::const_iterator
-        it = this->codes().begin();
-        it != this->codes().end(); ++it) {
-      entry.reset(codes_.NewEntryWrapper(it->first, it->second));
+        it = this->subjects().begin();
+        it != this->subjects().end(); ++it) {
+      entry.reset(subjects_.NewEntryWrapper(it->first, it->second));
       total_size += ::google::protobuf::internal::WireFormatLite::
           MessageSizeNoVirtual(*entry);
     }
@@ -1055,7 +1055,7 @@ void Person::MergeFrom(const Person& from) {
   (void) cached_has_bits;
 
   phones_.MergeFrom(from.phones_);
-  codes_.MergeFrom(from.codes_);
+  subjects_.MergeFrom(from.subjects_);
   if (from.name().size() > 0) {
 
     name_.AssignWithDefault(&::google::protobuf::internal::GetEmptyStringAlreadyInited(), from.name_);
@@ -1094,7 +1094,7 @@ void Person::Swap(Person* other) {
 void Person::InternalSwap(Person* other) {
   using std::swap;
   phones_.InternalSwap(&other->phones_);
-  codes_.Swap(&other->codes_);
+  subjects_.Swap(&other->subjects_);
   name_.Swap(&other->name_);
   email_.Swap(&other->email_);
   swap(id_, other->id_);
@@ -1260,22 +1260,22 @@ Person::phones() const {
   return phones_;
 }
 
-// map<int32, string> codes = 5;
-int Person::codes_size() const {
-  return codes_.size();
+// map<int32, string> subjects = 5;
+int Person::subjects_size() const {
+  return subjects_.size();
 }
-void Person::clear_codes() {
-  codes_.Clear();
+void Person::clear_subjects() {
+  subjects_.Clear();
 }
  const ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >&
-Person::codes() const {
-  // @@protoc_insertion_point(field_map:Person.codes)
-  return codes_.GetMap();
+Person::subjects() const {
+  // @@protoc_insertion_point(field_map:Person.subjects)
+  return subjects_.GetMap();
 }
  ::google::protobuf::Map< ::google::protobuf::int32, ::std::string >*
-Person::mutable_codes() {
-  // @@protoc_insertion_point(field_mutable_map:Person.codes)
-  return codes_.MutableMap();
+Person::mutable_subjects() {
+  // @@protoc_insertion_point(field_mutable_map:Person.subjects)
+  return subjects_.MutableMap();
 }
 
 #endif  // PROTOBUF_INLINE_NOT_IN_HEADERS
