@@ -1,8 +1,6 @@
 #include "proto.h"
 
-char cache_buffer[2*1024];
-DescriptorPool* g_descriptor_pool = NULL;
-MessageFactory* g_message_factory = NULL;
+char cache_buffer[2*1024*1024];
 
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)
@@ -11,7 +9,7 @@ static int parse(lua_State *L)
     const char* file = lua_tostring(L, 1);
     if (!ProtoParse(file))
     {
-        ProtoError("proto.parse fail, file=%s\n", file);
+        proto_error("proto.parse fail, file=%s\n", file);
         lua_pushboolean(L, false);
         return 1;
     }
@@ -29,7 +27,7 @@ static int encode(lua_State *L)
     size_t size = sizeof(cache_buffer);
     if (!ProtoEncode(proto, L, 2, cache_buffer, &size))
     {
-        ProtoError("proto.encode fail, proto=%s\n", proto);
+        proto_error("proto.encode fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -46,7 +44,7 @@ static int decode(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoDecode(proto, L, data, size))
     {
-        ProtoError("proto.decode fail, proto=%s\n", proto);
+        proto_error("proto.decode fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -63,7 +61,7 @@ static int pack(lua_State *L)
     size_t size = sizeof(cache_buffer);
     if (!ProtoPack(proto, L, 2, stack, cache_buffer, &size))
     {
-        ProtoError("proto.pack fail, proto=%s\n", proto);
+        proto_error("proto.pack fail, proto=%s\n", proto);
         return 0;
     }
 
@@ -80,7 +78,7 @@ static int unpack(lua_State *L)
     const char* data = lua_tolstring(L, 2, &size);
     if (!ProtoUnpack(proto, L, data, size))
     {
-        ProtoError("proto.unpack fail, proto=%s\n", proto);
+        proto_error("proto.unpack fail, proto=%s\n", proto);
         return 0;
     }
     
@@ -99,22 +97,19 @@ static const struct luaL_Reg protoLib[]={
 
 bool ProtoParse(const char* file)
 {
-    g_descriptor_pool->AddUnusedImportTrackFile(file);
-    const FileDescriptor* parsed_file = g_descriptor_pool->FindFileByName(file);
-    g_descriptor_pool->ClearUnusedImportTrackFiles();
+    const FileDescriptor* parsed_file = g_importer.Import(file);
     if (parsed_file == NULL) {
         return false;
     }
     return true;
 }
 
-bool ProtoError(const char* format, ...)
+void proto_log(int level, const char* format, ...)
 {
     va_list	args;
     va_start(args, format);
     _vprintf_p(format, args);
     va_end(args);
-    return true;
 }
 
 struct FieldOrderingByNumber {
@@ -133,6 +128,19 @@ std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descrip
     return fields;
 }
 
+class ProtoErrorCollector : public MultiFileErrorCollector
+{
+    virtual void AddError(const std::string& filename, int line, int column, const std::string& message)
+    {
+        proto_error("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+    }
+};
+
+ProtoErrorCollector		g_errorCollector;
+DiskSourceTree			g_sourceTree;
+Importer				g_importer(&g_sourceTree, &g_errorCollector);
+DynamicMessageFactory	g_factory;
+
 #ifdef _WIN32  
 extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)  
 #else
@@ -143,12 +151,7 @@ extern "C" int luaopen_protolua(lua_State* L)
     luaL_setfuncs(L, protoLib, 0);
     lua_setglobal(L, "proto");
     
+    g_sourceTree.MapPath("", "./");
     memset(cache_buffer, 0, sizeof(cache_buffer));
-    DiskSourceTree* disk_source_tree = new DiskSourceTree();
-    disk_source_tree->MapPath("", "./");
-    DescriptorDatabase* descriptor_database = new SourceTreeDescriptorDatabase(disk_source_tree);
-    g_descriptor_pool = new DescriptorPool(descriptor_database);
-    g_descriptor_pool->EnforceWeakDependencies(true);
-    g_message_factory = new DynamicMessageFactory(g_descriptor_pool);
     return 1;
 }

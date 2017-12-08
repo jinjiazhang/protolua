@@ -27,7 +27,7 @@ bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_St
 {
     const Reflection* reflection = message.GetReflection();
     if (!reflection->HasField(message, field)) {
-        ProtoError("DecodeRequired field nil, field=%s\n", field->full_name().c_str());
+        proto_error("DecodeRequired field nil, field=%s\n", field->full_name().c_str());
     }
 
     return DecodeSingle(message, field, L);
@@ -198,37 +198,33 @@ bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_Sta
 
 bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
-    Message* message = prototype->New();
-    PROTO_ASSERT(message);
-
+    google::protobuf::scoped_ptr<Message> message(prototype->New());
     message->ParseFromArray(input, size);
-    return DecodeMessage(*message, descriptor, L);
+    return DecodeMessage(*message.get(), descriptor, L);
 }
 
 bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
-    Message* message = prototype->New();
-    PROTO_ASSERT(message);
-
+    google::protobuf::scoped_ptr<Message> message(prototype->New());
     message->ParseFromArray(input, size);
 
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
     for (int i = 0; i < (int)fields.size(); i++)
     {
         const FieldDescriptor* field = fields[i];
-        PROTO_DO(DecodeField(*message, field, L));
+        PROTO_DO(DecodeField(*message.get(), field, L));
     }
     return true;
 }

@@ -26,7 +26,7 @@ bool EncodeField(Message* message, const FieldDescriptor* field, lua_State* L, i
 bool EncodeRequired(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        ProtoError("EncodeRequired field nil, field=%s\n", field->full_name().c_str());
+        proto_error("EncodeRequired field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
@@ -49,7 +49,7 @@ bool EncodeRepeated(Message* message, const FieldDescriptor* field, lua_State* L
     }
 
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeRepeated field isn't a table, field=%s\n", field->full_name().c_str());
+        proto_error("EncodeRepeated field isn't a table, field=%s\n", field->full_name().c_str());
         return false;
     }
 
@@ -66,12 +66,12 @@ bool EncodeRepeated(Message* message, const FieldDescriptor* field, lua_State* L
 bool EncodeTable(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        ProtoError("EncodeTable field nil, field=%s\n", field->full_name().c_str());
+        proto_error("EncodeTable field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeTable field isn't a table, field=%s\n", field->full_name().c_str());
+        proto_error("EncodeTable field isn't a table, field=%s\n", field->full_name().c_str());
         return false;
     }
 
@@ -207,7 +207,7 @@ bool EncodeMultiple(Message* message, const FieldDescriptor* field, lua_State* L
 bool EncodeMessage(Message* message, const Descriptor* descriptor, lua_State* L, int index)
 {
     if (!lua_istable(L, index)) {
-        ProtoError("EncodeMessage field isn't a table, field=%s\n", descriptor->full_name().c_str());
+        proto_error("EncodeMessage field isn't a table, field=%s\n", descriptor->full_name().c_str());
         return false;
     }
 
@@ -223,17 +223,15 @@ bool EncodeMessage(Message* message, const Descriptor* descriptor, lua_State* L,
 
 bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_t* size)
 {
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
-    Message* message = prototype->New();
-    PROTO_ASSERT(message);
-
     index = lua_absindex(L, index);
-    PROTO_DO(EncodeMessage(message, descriptor, L, index));
+    google::protobuf::scoped_ptr<Message> message(prototype->New());
+    PROTO_DO(EncodeMessage(message.get(), descriptor, L, index));
     message->SerializeToArray(output, *size);
     *size = message->ByteSizeLong();
     return true;
@@ -241,22 +239,20 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
 
 bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size)
 {
-    const Descriptor* descriptor = g_descriptor_pool->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_message_factory->GetPrototype(descriptor);
+    const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
-
-    Message* message = prototype->New();
-    PROTO_ASSERT(message);
 
     start = lua_absindex(L, start);
     end = lua_absindex(L, end);
+    google::protobuf::scoped_ptr<Message> message(prototype->New());
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
     for (int i = 0; i < (int)fields.size() && start + i <= end; i++)
     {
         const FieldDescriptor* field = fields[i];
-        PROTO_DO(EncodeField(message, field, L, start + i));
+        PROTO_DO(EncodeField(message.get(), field, L, start + i));
     }
 
     message->SerializeToArray(output, *size);
