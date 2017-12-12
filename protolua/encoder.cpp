@@ -26,7 +26,7 @@ bool EncodeField(Message* message, const FieldDescriptor* field, lua_State* L, i
 bool EncodeRequired(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_error("EncodeRequired field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("EncodeRequired field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
@@ -45,6 +45,7 @@ bool EncodeOptional(Message* message, const FieldDescriptor* field, lua_State* L
 bool EncodeRepeated(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
+        proto_warn("EncodeRepeated field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
@@ -66,7 +67,7 @@ bool EncodeRepeated(Message* message, const FieldDescriptor* field, lua_State* L
 bool EncodeTable(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_error("EncodeTable field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("EncodeTable field nil, field=%s\n", field->full_name().c_str());
         return true;
     }
 
@@ -95,54 +96,47 @@ bool EncodeTable(Message* message, const FieldDescriptor* field, lua_State* L, i
 bool EncodeSingle(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     const Reflection* reflection = message->GetReflection();
-    switch (field->type())
+    switch (field->cpp_type())
     {
-    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_DOUBLE:
         reflection->SetDouble(message, field, (double)lua_tonumber(L, index));
         break;
-    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_FLOAT:
         reflection->SetFloat(message, field, (float)lua_tonumber(L, index));
         break;
-    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT32:
         reflection->SetInt32(message, field, (int32)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT32:
         reflection->SetUInt32(message, field, (uint32)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT64:
         reflection->SetInt64(message, field, (int64)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT64:
         reflection->SetUInt64(message, field, (uint64)lua_tointeger(L, index)); 
         break;
-    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
+    case FieldDescriptor::CPPTYPE_ENUM:
         reflection->SetEnumValue(message, field, (int)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+    case FieldDescriptor::CPPTYPE_BOOL:
         reflection->SetBool(message, field, lua_toboolean(L, index) != 0);
         break;
-    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
-    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+    case FieldDescriptor::CPPTYPE_STRING:
         {
             size_t length = 0;
             const char* bytes = lua_tolstring(L, index, &length);
             reflection->SetString(message, field, string(bytes, length));
         }
         break;
-    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+    case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             Message* submessage = reflection->MutableMessage(message, field);
             PROTO_DO(EncodeMessage(submessage, field->message_type(), L, index));
         }
         break;
-    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
+        proto_error("EncodeSingle field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
@@ -151,54 +145,47 @@ bool EncodeSingle(Message* message, const FieldDescriptor* field, lua_State* L, 
 bool EncodeMultiple(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     const Reflection* reflection = message->GetReflection();
-    switch (field->type())
+    switch (field->cpp_type())
     {
-    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_DOUBLE:
         reflection->AddDouble(message, field, (double)lua_tonumber(L, index));
         break;
-    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_FLOAT:
         reflection->AddFloat(message, field, (float)lua_tonumber(L, index));
         break;
-    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT32:
         reflection->AddInt32(message, field, (int32)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT32:
         reflection->AddUInt32(message, field, (uint32)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT64:
         reflection->AddInt64(message, field, (int64)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT64:
         reflection->AddUInt64(message, field, (uint64)lua_tointeger(L, index)); 
         break;
-    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
+    case FieldDescriptor::CPPTYPE_ENUM:
         reflection->AddEnumValue(message, field, (int)lua_tointeger(L, index));
         break;
-    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+    case FieldDescriptor::CPPTYPE_BOOL:
         reflection->AddBool(message, field, lua_toboolean(L, index) != 0);
         break;
-    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
-    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+    case FieldDescriptor::CPPTYPE_STRING:
         {
             size_t length = 0;
             const char* bytes = lua_tolstring(L, index, &length);
             reflection->AddString(message, field, string(bytes, length));
         }
         break;
-    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+    case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             Message* submessage = reflection->AddMessage(message, field);
             PROTO_DO(EncodeMessage(submessage, field->message_type(), L, index));
         }
         break;
-    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
+        proto_error("EncodeMultiple field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
@@ -232,7 +219,7 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
     index = lua_absindex(L, index);
     google::protobuf::scoped_ptr<Message> message(prototype->New());
     PROTO_DO(EncodeMessage(message.get(), descriptor, L, index));
-    message->SerializeToArray(output, *size);
+    PROTO_DO(message->SerializeToArray(output, *size));
     *size = message->ByteSizeLong();
     return true;
 }
@@ -255,7 +242,7 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
         PROTO_DO(EncodeField(message.get(), field, L, start + i));
     }
 
-    message->SerializeToArray(output, *size);
+    PROTO_DO(message->SerializeToArray(output, *size));
     *size = message->ByteSizeLong();
     return true;
 }

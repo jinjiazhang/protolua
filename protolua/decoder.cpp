@@ -27,7 +27,7 @@ bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_St
 {
     const Reflection* reflection = message.GetReflection();
     if (!reflection->HasField(message, field)) {
-        proto_error("DecodeRequired field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("DecodeRequired field notFound, field=%s\n", field->full_name().c_str());
     }
 
     return DecodeSingle(message, field, L);
@@ -76,53 +76,46 @@ bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State
 bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
-    switch (field->type())
+    switch (field->cpp_type())
     {
-    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_DOUBLE:
         lua_pushnumber(L, reflection->GetDouble(message, field));
         break;
-    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_FLOAT:
         lua_pushnumber(L, reflection->GetFloat(message, field));
         break;
-    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT32:
         lua_pushinteger(L, reflection->GetInt32(message, field));
         break;
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT32:
         lua_pushinteger(L, reflection->GetUInt32(message, field));
         break;
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT64:
         lua_pushinteger(L, reflection->GetInt64(message, field));
         break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT64:
         lua_pushinteger(L, reflection->GetUInt64(message, field));
         break;
-    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
+    case FieldDescriptor::CPPTYPE_ENUM:
         lua_pushinteger(L, reflection->GetEnumValue(message, field));
         break;
-    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+    case FieldDescriptor::CPPTYPE_BOOL:
         lua_pushboolean(L, reflection->GetBool(message, field));
         break;
-    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
-    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+    case FieldDescriptor::CPPTYPE_STRING:
         {
             string& value = reflection->GetString(message, field);
             lua_pushlstring(L, value.c_str(), value.size());
         }
         break;
-    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+    case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             const Message& submessage = reflection->GetMessage(message, field);
             PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
         }
         break;
-    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
+        proto_error("DecodeSingle field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
@@ -131,53 +124,46 @@ bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_Stat
 bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index)
 {
     const Reflection* reflection = message.GetReflection();
-    switch (field->type())
+    switch (field->cpp_type())
     {
-    case FieldDescriptor::TYPE_DOUBLE         :  // double, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_DOUBLE:
         lua_pushnumber(L, reflection->GetRepeatedDouble(message, field, index));
         break;
-    case FieldDescriptor::TYPE_FLOAT          :  // float, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_FLOAT:
         lua_pushnumber(L, reflection->GetRepeatedFloat(message, field, index));
         break;
-    case FieldDescriptor::TYPE_INT32          :  // int32, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT32         :  // int32, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED32       :  // int32, exactly four bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT32:
         lua_pushinteger(L, reflection->GetRepeatedInt32(message, field, index));
         break;
-    case FieldDescriptor::TYPE_UINT32         :  // uint32, varint on the wire
-    case FieldDescriptor::TYPE_FIXED32        :  // uint32, exactly four bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT32:
         lua_pushinteger(L, reflection->GetRepeatedUInt32(message, field, index));
         break;
-    case FieldDescriptor::TYPE_INT64          :  // int64, varint on the wire.  Negative numbers
-    case FieldDescriptor::TYPE_SINT64         :  // int64, ZigZag-encoded varint on the wire
-    case FieldDescriptor::TYPE_SFIXED64       :  // int64, exactly eight bytes on the wire
+    case FieldDescriptor::CPPTYPE_INT64:
         lua_pushinteger(L, reflection->GetRepeatedInt64(message, field, index));
         break;
-    case FieldDescriptor::TYPE_UINT64         :  // uint64, varint on the wire.
-    case FieldDescriptor::TYPE_FIXED64        :  // uint64, exactly eight bytes on the wire.
+    case FieldDescriptor::CPPTYPE_UINT64:
         lua_pushinteger(L, reflection->GetRepeatedUInt64(message, field, index));
         break;
-    case FieldDescriptor::TYPE_ENUM           :  // Enum, varint on the wire
+    case FieldDescriptor::CPPTYPE_ENUM:
         lua_pushinteger(L, reflection->GetRepeatedEnumValue(message, field, index));
         break;
-    case FieldDescriptor::TYPE_BOOL           :  // bool, varint on the wire.
+    case FieldDescriptor::CPPTYPE_BOOL:
         lua_pushboolean(L, reflection->GetRepeatedBool(message, field, index));
         break;
-    case FieldDescriptor::TYPE_BYTES          :  // Arbitrary byte array.
-    case FieldDescriptor::TYPE_STRING         :  // UTF-8 text.
+    case FieldDescriptor::CPPTYPE_STRING:
         {
             string& value = reflection->GetRepeatedString(message, field, index);
             lua_pushlstring(L, value.c_str(), value.size());
         }
         break;
-    case FieldDescriptor::TYPE_MESSAGE        :  // Length-delimited message.
+    case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
             PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
         }
         break;
-    case FieldDescriptor::TYPE_GROUP          :  // Tag-delimited message.  Deprecated.
     default:
+        proto_error("DecodeMultiple field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
@@ -205,7 +191,7 @@ bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size
     PROTO_ASSERT(prototype);
 
     google::protobuf::scoped_ptr<Message> message(prototype->New());
-    message->ParseFromArray(input, size);
+    PROTO_DO(message->ParseFromArray(input, size));
     return DecodeMessage(*message.get(), descriptor, L);
 }
 
@@ -218,7 +204,7 @@ bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size
     PROTO_ASSERT(prototype);
 
     google::protobuf::scoped_ptr<Message> message(prototype->New());
-    message->ParseFromArray(input, size);
+    PROTO_DO(message->ParseFromArray(input, size));
 
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
     for (int i = 0; i < (int)fields.size(); i++)
