@@ -35,6 +35,12 @@ bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_St
 
 bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
+    const Reflection* reflection = message.GetReflection();
+    if (field->containing_oneof() && !reflection->HasField(message, field)) {
+        lua_pushnil(L); // oneof field special
+        return true;
+    }
+
     return DecodeSingle(message, field, L);
 }
 
@@ -175,9 +181,8 @@ bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_Sta
     for (int i = 0; i < descriptor->field_count(); i++)
     {
         const FieldDescriptor* field = descriptor->field(i);
-        lua_pushstring(L, field->name().c_str());
         PROTO_DO(DecodeField(message, field, L));
-        lua_settable(L, -3);
+        lua_setfield(L, -2, field->name().c_str());
     }
     return true;
 }
