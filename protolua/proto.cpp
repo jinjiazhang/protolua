@@ -1,7 +1,5 @@
 #include "proto.h"
 
-char cache_buffer[2*1024*1024];
-
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)
 {
@@ -24,15 +22,13 @@ static int encode(lua_State *L)
     assert(lua_gettop(L) == 2);
     assert(lua_istable(L, 2));
     const char* proto = lua_tostring(L, 1);
-    size_t size = sizeof(cache_buffer);
-    if (!ProtoEncode(proto, L, 2, cache_buffer, &size))
+    if (!ProtoEncode(proto, L, 2, 0, 0))
     {
         proto_error("proto.encode fail, proto=%s\n", proto);
         return 0;
     }
 
-    lua_pushlstring(L, cache_buffer, size);
-    return 1;
+    return lua_gettop(L) - 2;
 }
 
 // person = proto.decode("Person", data)
@@ -48,8 +44,7 @@ static int decode(lua_State *L)
         return 0;
     }
 
-    int stack = lua_gettop(L);
-    return stack - 2;
+    return lua_gettop(L) - 2;
 }
 
 // data = proto.pack("Person", name, id, email)
@@ -58,15 +53,13 @@ static int pack(lua_State *L)
     assert(lua_gettop(L) >= 1);
     int stack = lua_gettop(L);
     const char* proto = lua_tostring(L, 1);
-    size_t size = sizeof(cache_buffer);
-    if (!ProtoPack(proto, L, 2, stack, cache_buffer, &size))
+    if (!ProtoPack(proto, L, 2, stack, 0, 0))
     {
         proto_error("proto.pack fail, proto=%s\n", proto);
         return 0;
     }
 
-    lua_pushlstring(L, cache_buffer, size);
-    return 1;
+    return lua_gettop(L) - stack;
 }
 
 // name, id, email = proto.unpack("Person", data)
@@ -82,8 +75,7 @@ static int unpack(lua_State *L)
         return 0;
     }
     
-    int stack = lua_gettop(L);
-    return stack - 2;
+    return lua_gettop(L) - 2;
 }
 
 static const struct luaL_Reg protoLib[]={
@@ -152,6 +144,5 @@ extern "C" int luaopen_protolua(lua_State* L)
     lua_setglobal(L, "proto");
     
     g_sourceTree.MapPath("", "./");
-    memset(cache_buffer, 0, sizeof(cache_buffer));
     return 1;
 }

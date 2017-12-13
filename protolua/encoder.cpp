@@ -219,8 +219,18 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
     index = lua_absindex(L, index);
     google::protobuf::scoped_ptr<Message> message(prototype->New());
     PROTO_DO(EncodeMessage(message.get(), descriptor, L, index));
-    PROTO_DO(message->SerializeToArray(output, *size));
-    *size = message->ByteSizeLong();
+
+    if (output && size) // export to buffer
+    {
+        PROTO_DO(message->SerializeToArray(output, *size));
+        *size = message->ByteSizeLong();
+    }
+    else 
+    {
+        string output; // push to lua stack
+        PROTO_DO(message->SerializeToString(&output));
+        lua_pushlstring(L, output.c_str(), output.size());
+    }
     return true;
 }
 
@@ -242,7 +252,16 @@ bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output
         PROTO_DO(EncodeField(message.get(), field, L, start + i));
     }
 
-    PROTO_DO(message->SerializeToArray(output, *size));
-    *size = message->ByteSizeLong();
+    if (output && size) // export to buffer
+    {
+        PROTO_DO(message->SerializeToArray(output, *size));
+        *size = message->ByteSizeLong();
+    }
+    else 
+    {
+        string output; // push to lua stack
+        PROTO_DO(message->SerializeToString(&output));
+        lua_pushlstring(L, output.c_str(), output.size());
+    }
     return true;
 }
