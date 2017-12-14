@@ -16,6 +16,20 @@ static int parse(lua_State *L)
     return 1;
 }
 
+// person = proto.build("Person")
+static int build(lua_State *L)
+{
+    assert(lua_gettop(L) == 1);
+    const char* proto = lua_tostring(L, 1);
+    if (!ProtoDecode(proto, L, 0, 0))
+    {
+        proto_error("proto.build fail, proto=%s\n", proto);
+        return 0;
+    }
+
+    return lua_gettop(L) - 1;
+}
+
 // data = proto.encode("Person", person)
 static int encode(lua_State *L)
 {
@@ -80,6 +94,7 @@ static int unpack(lua_State *L)
 
 static const struct luaL_Reg protoLib[]={
     {"parse", parse},
+    {"build", build},
     {"encode", encode},
     {"decode", decode},
     {"pack", pack},

@@ -17,9 +17,6 @@ using namespace google::protobuf::io;
 using namespace google::protobuf::compiler;
 using namespace google::protobuf::internal;
 
-#define PROTO_DO(exp) { if(!(exp)) return false; }
-#define PROTO_ASSERT(exp) { if(!(exp)) return false; }
-
 bool ProtoParse(const char* file);
 bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_t* size);
 bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size);
