@@ -110,7 +110,7 @@ bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_Stat
         break;
     case FieldDescriptor::CPPTYPE_STRING:
         {
-            string& value = reflection->GetString(message, field);
+            string value = reflection->GetString(message, field);
             lua_pushlstring(L, value.c_str(), value.size());
         }
         break;
@@ -158,7 +158,7 @@ bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_St
         break;
     case FieldDescriptor::CPPTYPE_STRING:
         {
-            string& value = reflection->GetRepeatedString(message, field, index);
+            string value = reflection->GetRepeatedString(message, field, index);
             lua_pushlstring(L, value.c_str(), value.size());
         }
         break;

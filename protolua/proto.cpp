@@ -115,7 +115,11 @@ void proto_log(int level, const char* format, ...)
 {
     va_list	args;
     va_start(args, format);
+#ifdef _WIN32
     _vprintf_p(format, args);
+#else
+    vprintf(format, args);
+#endif // _WIN32
     va_end(args);
 }
 
@@ -148,7 +152,7 @@ DiskSourceTree			g_sourceTree;
 Importer				g_importer(&g_sourceTree, &g_errorCollector);
 DynamicMessageFactory	g_factory;
 
-#ifdef _WIN32  
+#ifdef _WIN32
 extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)  
 #else
 extern "C" int luaopen_protolua(lua_State* L)
