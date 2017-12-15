@@ -1,5 +1,6 @@
 INC_PATH = ../lua-5.3.4/src ../protobuf-3.4.1/src
 LIB_PATH = ../libs
+BIN_PATH = ../bin
 LIB = lua protobuf pthread
 
 CC = g++
@@ -23,4 +24,4 @@ clean:
 	rm -f $(OBJ) $(PRG)
 
 install:
-	cp -f $(PRG) $(LIB_PATH)
+	cp -f $(PRG) $(BIN_PATH)
