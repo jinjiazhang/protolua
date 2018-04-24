@@ -175,7 +175,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\proto.cpp"
+				RelativePath=".\protolua.cpp"
 				>
 			</File>
 		</Filter>
@@ -189,7 +189,7 @@
 				>
 			</File>
 			<File
-				RelativePath=".\proto.h"
+				RelativePath=".\protolua.h"
 				>
 			</File>
 		</Filter>

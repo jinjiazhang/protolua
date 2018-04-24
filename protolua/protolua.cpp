@@ -1,4 +1,4 @@
-#include "proto.h"
+#include "protolua.h"
 
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)

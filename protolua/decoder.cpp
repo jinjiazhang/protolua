@@ -1,4 +1,4 @@
-#include "proto.h"
+#include "protolua.h"
 
 bool DecodeField(const Message& message, const FieldDescriptor* field, lua_State* L);
 bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_State* L);

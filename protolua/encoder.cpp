@@ -1,4 +1,4 @@
-#include "proto.h"
+#include "protolua.h"
 
 bool EncodeField(Message* message, const FieldDescriptor* field, lua_State* L, int index);
 bool EncodeRequired(Message* message, const FieldDescriptor* field, lua_State* L, int index);
