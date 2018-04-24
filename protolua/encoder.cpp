@@ -234,6 +234,7 @@ bool ProtoEncode(const char* proto, lua_State* L, int index, char* output, size_
     return true;
 }
 
+std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 bool ProtoPack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size)
 {
     const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);

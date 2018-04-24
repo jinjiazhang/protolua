@@ -111,18 +111,6 @@ bool ProtoParse(const char* file)
     return true;
 }
 
-void proto_log(int level, const char* format, ...)
-{
-    va_list	args;
-    va_start(args, format);
-#ifdef _WIN32
-    _vprintf_p(format, args);
-#else
-    vprintf(format, args);
-#endif // _WIN32
-    va_end(args);
-}
-
 struct FieldOrderingByNumber {
     inline bool operator()(const FieldDescriptor* a,
         const FieldDescriptor* b) const {

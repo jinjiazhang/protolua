@@ -200,6 +200,7 @@ bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size
     return DecodeMessage(*message.get(), descriptor, L);
 }
 
+std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
     const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);

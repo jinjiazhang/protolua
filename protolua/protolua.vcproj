@@ -110,8 +110,8 @@
 				Optimization="0"
 				InlineFunctionExpansion="0"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="&quot;../lua-5.3.4/src&quot;;&quot;../protobuf-3.4.1/src&quot;"
-				RuntimeLibrary="2"
+				AdditionalIncludeDirectories="../include"
+				RuntimeLibrary="0"
 				EnableFunctionLevelLinking="true"
 				WarningLevel="3"
 				DebugInformationFormat="3"
@@ -184,10 +184,6 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
-			<File
-				RelativePath=".\logger.h"
-				>
-			</File>
 			<File
 				RelativePath=".\protolua.h"
 				>
