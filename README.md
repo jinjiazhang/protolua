@@ -87,7 +87,6 @@ end
 proto.CallServer("OnBuyItemReq", 1021, 10)
 ```
 ## Dependencies
-lua-5.3.4: https://www.lua.org/ftp/lua-5.3.4.tar.gz<br>
-protobuf-3.4.1: https://github.com/google/protobuf/releases/download/v3.4.1/protobuf-cpp-3.4.1.tar.gz<br>
-If you want to use other version of the library, may be you need to alter a little code.<br>
-You can compile protolua.dll with 'RelWithDebInfo' config in vs2008.
+lua-5.3.5: https://www.lua.org/ftp/lua-5.3.5.tar.gz<br>
+protobuf: https://github.com/google/protobuf<br>
+
