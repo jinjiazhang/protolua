@@ -1,39 +1,42 @@
 #include "protolua.h"
 
-bool DecodeField(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeRepeated(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_State* L);
-bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index);
-bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_State* L);
+using namespace google::protobuf;
+using namespace google::protobuf::compiler;
 
-bool DecodeField(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_field(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_required(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_optional(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_repeated(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_table(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_single(const Message& message, const FieldDescriptor* field, lua_State* L);
+bool decode_multiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index);
+bool decode_message(const Message& message, const Descriptor* descriptor, lua_State* L);
+
+bool decode_field(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     if (field->is_map())
-        return DecodeTable(message, field, L);
+        return decode_table(message, field, L);
     else if (field->is_required())
-        return DecodeRequired(message, field, L);
+        return decode_required(message, field, L);
     else if (field->is_optional())
-        return DecodeOptional(message, field, L);
+        return decode_optional(message, field, L);
     else if (field->is_repeated())
-        return DecodeRepeated(message, field, L);
+        return decode_repeated(message, field, L);
     else
         return false;
 }
 
-bool DecodeRequired(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_required(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
     if (!reflection->HasField(message, field)) {
-        proto_warn("DecodeRequired field notFound, field=%s\n", field->full_name().c_str());
+        proto_warn("decode_required field notFound, field=%s\n", field->full_name().c_str());
     }
 
-    return DecodeSingle(message, field, L);
+    return decode_single(message, field, L);
 }
 
-bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_optional(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
     if (field->containing_oneof() && !reflection->HasField(message, field)) {
@@ -41,10 +44,10 @@ bool DecodeOptional(const Message& message, const FieldDescriptor* field, lua_St
         return true;
     }
 
-    return DecodeSingle(message, field, L);
+    return decode_single(message, field, L);
 }
 
-bool DecodeRepeated(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_repeated(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
     int field_size = reflection->FieldSize(message, field);
@@ -52,13 +55,13 @@ bool DecodeRepeated(const Message& message, const FieldDescriptor* field, lua_St
     lua_newtable(L);
     for (int index = 0; index < field_size; index++)
     {
-        PROTO_DO(DecodeMultiple(message, field, L, index));
+        PROTO_DO(decode_multiple(message, field, L, index));
         lua_seti(L, -2, index + 1);
     }
     return true;
 }
 
-bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_table(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
     int field_size = reflection->FieldSize(message, field);
@@ -72,14 +75,14 @@ bool DecodeTable(const Message& message, const FieldDescriptor* field, lua_State
     for (int index = 0; index < field_size; index++)
     {
         const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
-        PROTO_DO(DecodeField(submessage, key, L));
-        PROTO_DO(DecodeField(submessage, value, L));
+        PROTO_DO(decode_field(submessage, key, L));
+        PROTO_DO(decode_field(submessage, value, L));
         lua_settable(L, -3);
     }
     return true;
 }
 
-bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_State* L)
+bool decode_single(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
     switch (field->cpp_type())
@@ -117,17 +120,17 @@ bool DecodeSingle(const Message& message, const FieldDescriptor* field, lua_Stat
     case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             const Message& submessage = reflection->GetMessage(message, field);
-            PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
+            PROTO_DO(decode_message(submessage, field->message_type(), L));
         }
         break;
     default:
-        proto_error("DecodeSingle field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("decode_single field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
 }
 
-bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index)
+bool decode_multiple(const Message& message, const FieldDescriptor* field, lua_State* L, int index)
 {
     const Reflection* reflection = message.GetReflection();
     switch (field->cpp_type())
@@ -165,29 +168,29 @@ bool DecodeMultiple(const Message& message, const FieldDescriptor* field, lua_St
     case FieldDescriptor::CPPTYPE_MESSAGE:
         {
             const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
-            PROTO_DO(DecodeMessage(submessage, field->message_type(), L));
+            PROTO_DO(decode_message(submessage, field->message_type(), L));
         }
         break;
     default:
-        proto_error("DecodeMultiple field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("decode_multiple field unknow type, field=%s\n", field->full_name().c_str());
         return false;
     }
     return true;
 }
 
-bool DecodeMessage(const Message& message, const Descriptor* descriptor, lua_State* L)
+bool decode_message(const Message& message, const Descriptor* descriptor, lua_State* L)
 {
     lua_newtable(L);
     for (int i = 0; i < descriptor->field_count(); i++)
     {
         const FieldDescriptor* field = descriptor->field(i);
-        PROTO_DO(DecodeField(message, field, L));
+        PROTO_DO(decode_field(message, field, L));
         lua_setfield(L, -2, field->name().c_str());
     }
     return true;
 }
 
-bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size)
+bool proto_decode(const char* proto, lua_State* L, const char* input, size_t size)
 {
     const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
@@ -195,13 +198,13 @@ bool ProtoDecode(const char* proto, lua_State* L, const char* input, size_t size
     const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
-    google::protobuf::scoped_ptr<Message> message(prototype->New());
+    std::unique_ptr<Message> message(prototype->New());
     PROTO_DO(message->ParseFromArray(input, size));
-    return DecodeMessage(*message.get(), descriptor, L);
+    return decode_message(*message.get(), descriptor, L);
 }
 
 std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
-bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size)
+bool proto_unpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
     const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
@@ -209,14 +212,14 @@ bool ProtoUnpack(const char* proto, lua_State* L, const char* input, size_t size
     const Message* prototype = g_factory.GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
-    google::protobuf::scoped_ptr<Message> message(prototype->New());
+    std::unique_ptr<Message> message(prototype->New());
     PROTO_DO(message->ParseFromArray(input, size));
 
     std::vector<const FieldDescriptor*> fields = SortFieldsByNumber(descriptor);
     for (int i = 0; i < (int)fields.size(); i++)
     {
         const FieldDescriptor* field = fields[i];
-        PROTO_DO(DecodeField(*message.get(), field, L));
+        PROTO_DO(decode_field(*message.get(), field, L));
     }
     return true;
 }

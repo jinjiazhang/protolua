@@ -1,11 +1,14 @@
 #include "protolua.h"
 
+using namespace google::protobuf;
+using namespace google::protobuf::compiler;
+
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
     const char* file = lua_tostring(L, 1);
-    if (!ProtoParse(file))
+    if (!proto_parse(file, L))
     {
         proto_error("proto.parse fail, file=%s\n", file);
         lua_pushboolean(L, false);
@@ -21,7 +24,7 @@ static int build(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
     const char* proto = lua_tostring(L, 1);
-    if (!ProtoDecode(proto, L, 0, 0))
+    if (!proto_decode(proto, L, 0, 0))
     {
         proto_error("proto.build fail, proto=%s\n", proto);
         return 0;
@@ -36,7 +39,7 @@ static int encode(lua_State *L)
     assert(lua_gettop(L) == 2);
     assert(lua_istable(L, 2));
     const char* proto = lua_tostring(L, 1);
-    if (!ProtoEncode(proto, L, 2, 0, 0))
+    if (!proto_encode(proto, L, 2, 0, 0))
     {
         proto_error("proto.encode fail, proto=%s\n", proto);
         return 0;
@@ -52,7 +55,7 @@ static int decode(lua_State *L)
     size_t size = 0;
     const char* proto = lua_tostring(L, 1);
     const char* data = lua_tolstring(L, 2, &size);
-    if (!ProtoDecode(proto, L, data, size))
+    if (!proto_decode(proto, L, data, size))
     {
         proto_error("proto.decode fail, proto=%s\n", proto);
         return 0;
@@ -67,7 +70,7 @@ static int pack(lua_State *L)
     assert(lua_gettop(L) >= 1);
     int stack = lua_gettop(L);
     const char* proto = lua_tostring(L, 1);
-    if (!ProtoPack(proto, L, 2, stack, 0, 0))
+    if (!proto_pack(proto, L, 2, stack, 0, 0))
     {
         proto_error("proto.pack fail, proto=%s\n", proto);
         return 0;
@@ -83,7 +86,7 @@ static int unpack(lua_State *L)
     size_t size = 0;
     const char* proto = lua_tostring(L, 1);
     const char* data = lua_tolstring(L, 2, &size);
-    if (!ProtoUnpack(proto, L, data, size))
+    if (!proto_unpack(proto, L, data, size))
     {
         proto_error("proto.unpack fail, proto=%s\n", proto);
         return 0;
@@ -101,15 +104,6 @@ static const struct luaL_Reg protoLib[]={
     {"unpack", unpack},
     {NULL, NULL}
 };
-
-bool ProtoParse(const char* file)
-{
-    const FileDescriptor* parsed_file = g_importer.Import(file);
-    if (parsed_file == NULL) {
-        return false;
-    }
-    return true;
-}
 
 struct FieldOrderingByNumber {
     inline bool operator()(const FieldDescriptor* a,
@@ -133,18 +127,19 @@ class ProtoErrorCollector : public MultiFileErrorCollector
     {
         proto_error("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
     }
+
+    virtual void AddWarning(const std::string& filename, int line, int column, const std::string& message)
+    {
+        proto_warn("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+    }
 };
 
-ProtoErrorCollector		g_errorCollector;
-DiskSourceTree			g_sourceTree;
-Importer				g_importer(&g_sourceTree, &g_errorCollector);
-DynamicMessageFactory	g_factory;
+ProtoErrorCollector        g_errorCollector;
+DiskSourceTree             g_sourceTree;
+Importer                   g_importer(&g_sourceTree, &g_errorCollector);
+DynamicMessageFactory      g_factory;
 
-#ifdef _WIN32
-extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)  
-#else
-extern "C" int luaopen_protolua(lua_State* L)
-#endif // _WIN32
+int luaopen_protolua(lua_State* L)
 {
     lua_newtable(L);
     luaL_setfuncs(L, protoLib, 0);
