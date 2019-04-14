@@ -139,7 +139,11 @@ DiskSourceTree             g_sourceTree;
 Importer                   g_importer(&g_sourceTree, &g_errorCollector);
 DynamicMessageFactory      g_factory;
 
-int luaopen_protolua(lua_State* L)
+#ifdef _WIN32
+extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)
+#else
+extern "C" int luaopen_protolua(lua_State* L)
+#endif // _WIN32
 {
     lua_newtable(L);
     luaL_setfuncs(L, protoLib, 0);

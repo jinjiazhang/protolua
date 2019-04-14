@@ -34,6 +34,5 @@ bool proto_unpack(const char* proto, lua_State* L, const char* input, size_t siz
 
 extern google::protobuf::compiler::Importer g_importer;
 extern google::protobuf::DynamicMessageFactory g_factory;
-int luaopen_protolua(lua_State* L);
 
 #endif

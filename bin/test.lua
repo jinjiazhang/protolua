@@ -6,8 +6,8 @@ local player = {
     id = 10001,
     email = "jinjiazh@qq.com",
     phones = {
-        {number = "1818864xxxx", type = 1},
-        {number = "1868200xxxx", type = 2},
+        {number = "1818864xxxx", type = PhoneType.HOME},
+        {number = "1868200xxxx", type = PhoneType.WORK},
     },
     subjects = {
     	[101] = "Chinese",
