@@ -29,7 +29,7 @@ bool encode_field(Message* message, const FieldDescriptor* field, lua_State* L, 
 bool encode_required(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_warn("encode_required field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("encode_required field nil, field=%s", field->full_name().c_str());
         return true;
     }
 
@@ -48,12 +48,12 @@ bool encode_optional(Message* message, const FieldDescriptor* field, lua_State* 
 bool encode_repeated(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_warn("encode_repeated field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("encode_repeated field nil, field=%s", field->full_name().c_str());
         return true;
     }
 
     if (!lua_istable(L, index)) {
-        proto_error("encode_repeated field isn't a table, field=%s\n", field->full_name().c_str());
+        proto_error("encode_repeated field isn't a table, field=%s", field->full_name().c_str());
         return false;
     }
 
@@ -70,12 +70,12 @@ bool encode_repeated(Message* message, const FieldDescriptor* field, lua_State* 
 bool encode_table(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_warn("encode_table field nil, field=%s\n", field->full_name().c_str());
+        proto_warn("encode_table field nil, field=%s", field->full_name().c_str());
         return true;
     }
 
     if (!lua_istable(L, index)) {
-        proto_error("encode_table field isn't a table, field=%s\n", field->full_name().c_str());
+        proto_error("encode_table field isn't a table, field=%s", field->full_name().c_str());
         return false;
     }
 
@@ -139,7 +139,7 @@ bool encode_single(Message* message, const FieldDescriptor* field, lua_State* L,
         }
         break;
     default:
-        proto_error("encode_single field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("encode_single field unknow type, field=%s", field->full_name().c_str());
         return false;
     }
     return true;
@@ -188,7 +188,7 @@ bool encode_multiple(Message* message, const FieldDescriptor* field, lua_State* 
         }
         break;
     default:
-        proto_error("encode_multiple field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("encode_multiple field unknow type, field=%s", field->full_name().c_str());
         return false;
     }
     return true;
@@ -197,7 +197,7 @@ bool encode_multiple(Message* message, const FieldDescriptor* field, lua_State* 
 bool encode_message(Message* message, const Descriptor* descriptor, lua_State* L, int index)
 {
     if (!lua_istable(L, index)) {
-        proto_error("encode_message field isn't a table, field=%s\n", descriptor->full_name().c_str());
+        proto_error("encode_message field isn't a table, field=%s", descriptor->full_name().c_str());
         return false;
     }
 

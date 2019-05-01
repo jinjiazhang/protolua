@@ -7,10 +7,11 @@ using namespace google::protobuf::compiler;
 static int parse(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
+    luaL_checktype(L, 1, LUA_TSTRING);
     const char* file = lua_tostring(L, 1);
     if (!proto_parse(file, L))
     {
-        proto_error("proto.parse fail, file=%s\n", file);
+        proto_error("proto.parse fail, file=%s", file);
         lua_pushboolean(L, false);
         return 1;
     }
@@ -19,29 +20,47 @@ static int parse(lua_State *L)
     return 1;
 }
 
-// person = proto.build("Person")
-static int build(lua_State *L)
+// person = proto.create("Person")
+static int create(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
+    luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
     if (!proto_decode(proto, L, 0, 0))
     {
-        proto_error("proto.build fail, proto=%s\n", proto);
+        proto_error("proto.create fail, proto=%s", proto);
         return 0;
     }
 
     return lua_gettop(L) - 1;
 }
 
+static int belong(lua_State *L)
+{
+    assert(lua_gettop(L) == 1);
+    luaL_checktype(L, 1, LUA_TSTRING);
+    const char* proto = lua_tostring(L, 1);
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    if (descriptor == nullptr)
+    {
+        return 0;
+    }
+
+    const char* file_name = descriptor->file()->name().c_str();
+    lua_pushstring(L, file_name);
+    return 1;
+}
+
 // data = proto.encode("Person", person)
 static int encode(lua_State *L)
 {
     assert(lua_gettop(L) == 2);
-    assert(lua_istable(L, 2));
+    luaL_checktype(L, 1, LUA_TSTRING);
+    luaL_checktype(L, 2, LUA_TTABLE);
     const char* proto = lua_tostring(L, 1);
     if (!proto_encode(proto, L, 2, 0, 0))
     {
-        proto_error("proto.encode fail, proto=%s\n", proto);
+        proto_error("proto.encode fail, proto=%s", proto);
         return 0;
     }
 
@@ -53,11 +72,13 @@ static int decode(lua_State *L)
 {
     assert(lua_gettop(L) == 2);
     size_t size = 0;
+    luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
+    luaL_checktype(L, 2, LUA_TSTRING);
     const char* data = lua_tolstring(L, 2, &size);
     if (!proto_decode(proto, L, data, size))
     {
-        proto_error("proto.decode fail, proto=%s\n", proto);
+        proto_error("proto.decode fail, proto=%s", proto);
         return 0;
     }
 
@@ -69,10 +90,11 @@ static int pack(lua_State *L)
 {
     assert(lua_gettop(L) >= 1);
     int stack = lua_gettop(L);
+    luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
     if (!proto_pack(proto, L, 2, stack, 0, 0))
     {
-        proto_error("proto.pack fail, proto=%s\n", proto);
+        proto_error("proto.pack fail, proto=%s", proto);
         return 0;
     }
 
@@ -84,11 +106,12 @@ static int unpack(lua_State *L)
 {
     assert(lua_gettop(L) == 2);
     size_t size = 0;
+    luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
     const char* data = lua_tolstring(L, 2, &size);
     if (!proto_unpack(proto, L, data, size))
     {
-        proto_error("proto.unpack fail, proto=%s\n", proto);
+        proto_error("proto.unpack fail, proto=%s", proto);
         return 0;
     }
     
@@ -97,7 +120,8 @@ static int unpack(lua_State *L)
 
 static const struct luaL_Reg protoLib[]={
     {"parse", parse},
-    {"build", build},
+    {"create", create},
+    {"belong", belong},
     {"encode", encode},
     {"decode", decode},
     {"pack", pack},

@@ -6,9 +6,13 @@ using namespace google::protobuf::compiler;
 bool parse_enum(const EnumDescriptor* enum_desc, lua_State* L)
 {
     lua_getglobal(L, enum_desc->name().c_str());
-    PROTO_ASSERT(lua_isnil(L, -1));
-    lua_pop(L, 1);
+    if (!lua_isnil(L, -1))
+    {
+        lua_pop(L, 1);
+        return true;
+    }
 
+    lua_pop(L, 1);
     lua_newtable(L);
     int value_count = enum_desc->value_count();
     for (int i = 0; i < value_count; i++)

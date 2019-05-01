@@ -30,7 +30,7 @@ bool decode_required(const Message& message, const FieldDescriptor* field, lua_S
 {
     const Reflection* reflection = message.GetReflection();
     if (!reflection->HasField(message, field)) {
-        proto_warn("decode_required field notFound, field=%s\n", field->full_name().c_str());
+        proto_warn("decode_required field notFound, field=%s", field->full_name().c_str());
     }
 
     return decode_single(message, field, L);
@@ -124,7 +124,7 @@ bool decode_single(const Message& message, const FieldDescriptor* field, lua_Sta
         }
         break;
     default:
-        proto_error("decode_single field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("decode_single field unknow type, field=%s", field->full_name().c_str());
         return false;
     }
     return true;
@@ -172,7 +172,7 @@ bool decode_multiple(const Message& message, const FieldDescriptor* field, lua_S
         }
         break;
     default:
-        proto_error("decode_multiple field unknow type, field=%s\n", field->full_name().c_str());
+        proto_error("decode_multiple field unknow type, field=%s", field->full_name().c_str());
         return false;
     }
     return true;
