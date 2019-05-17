@@ -51,8 +51,7 @@ bool decode_repeated(const Message& message, const FieldDescriptor* field, lua_S
 {
     const Reflection* reflection = message.GetReflection();
     int field_size = reflection->FieldSize(message, field);
-    
-    lua_newtable(L);
+    lua_createtable(L, field_size, 0);
     for (int index = 0; index < field_size; index++)
     {
         PROTO_DO(decode_multiple(message, field, L, index));
@@ -71,7 +70,7 @@ bool decode_table(const Message& message, const FieldDescriptor* field, lua_Stat
     const FieldDescriptor* key = descriptor->field(0);
     const FieldDescriptor* value = descriptor->field(1);
 
-    lua_newtable(L);
+    lua_createtable(L, 0, field_size);
     for (int index = 0; index < field_size; index++)
     {
         const Message& submessage = reflection->GetRepeatedMessage(message, field, index);
@@ -180,8 +179,9 @@ bool decode_multiple(const Message& message, const FieldDescriptor* field, lua_S
 
 bool decode_message(const Message& message, const Descriptor* descriptor, lua_State* L)
 {
-    lua_newtable(L);
-    for (int i = 0; i < descriptor->field_count(); i++)
+    int field_count = descriptor->field_count();
+    lua_createtable(L, 0, field_count);
+    for (int i = 0; i < field_count; i++)
     {
         const FieldDescriptor* field = descriptor->field(i);
         PROTO_DO(decode_field(message, field, L));
