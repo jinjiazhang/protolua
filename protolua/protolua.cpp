@@ -20,6 +20,23 @@ static int parse(lua_State *L)
     return 1;
 }
 
+// is_exist = proto.exist("Person")
+static int exist(lua_State *L)
+{
+    assert(lua_gettop(L) == 1);
+    luaL_checktype(L, 1, LUA_TSTRING);
+    const char* proto = lua_tostring(L, 1);
+    if (!g_importer.pool()->FindMessageTypeByName(proto))
+    {
+        lua_pushboolean(L, 0);
+    }
+    else
+    {
+        lua_pushboolean(L, 1);
+    }
+    return 1;
+}
+
 // person = proto.create("Person")
 static int create(lua_State *L)
 {
@@ -33,22 +50,6 @@ static int create(lua_State *L)
     }
 
     return lua_gettop(L) - 1;
-}
-
-static int belong(lua_State *L)
-{
-    assert(lua_gettop(L) == 1);
-    luaL_checktype(L, 1, LUA_TSTRING);
-    const char* proto = lua_tostring(L, 1);
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
-    if (descriptor == nullptr)
-    {
-        return 0;
-    }
-
-    const char* file_name = descriptor->file()->name().c_str();
-    lua_pushstring(L, file_name);
-    return 1;
 }
 
 // data = proto.encode("Person", person)
@@ -120,8 +121,8 @@ static int unpack(lua_State *L)
 
 static const struct luaL_Reg protoLib[]={
     {"parse", parse},
+    {"exist", exist},
     {"create", create},
-    {"belong", belong},
     {"encode", encode},
     {"decode", decode},
     {"pack", pack},
@@ -174,5 +175,6 @@ extern "C" int luaopen_protolua(lua_State* L)
     lua_setglobal(L, "proto");
     
     g_sourceTree.MapPath("", "./");
+    g_sourceTree.MapPath("", "./proto/");
     return 1;
 }
