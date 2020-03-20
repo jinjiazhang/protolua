@@ -2,6 +2,7 @@
 #define _JINJIAZHANG_PROTO_H_
 
 #include "lua.hpp"
+#include "protover.h"
 // #include "protolog/protolog.h"
 
 #include "google/protobuf/dynamic_message.h"

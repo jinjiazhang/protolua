@@ -170,9 +170,13 @@ extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)
 extern "C" int luaopen_protolua(lua_State* L)
 #endif // _WIN32
 {
+#if LUA_VERSION_NUM == 501
+    luaL_register(L, "proto", protoLib);
+#else
     lua_newtable(L);
     luaL_setfuncs(L, protoLib, 0);
     lua_setglobal(L, "proto");
+#endif
     
     g_sourceTree.MapPath("", "./");
     g_sourceTree.MapPath("", "./proto/");
