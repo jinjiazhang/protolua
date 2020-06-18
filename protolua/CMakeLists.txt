@@ -13,7 +13,7 @@ file(GLOB_RECURSE DIR_INCS *.h *.hpp)
 source_group("Include Files" FILES ${DIR_INCS}) 
 
 add_library(${PROJECT_NAME} SHARED ${DIR_SRCS} ${DIR_INCS})
-target_link_libraries(${PROJECT_NAME} lua53 libprotobuf)
+target_link_libraries(${PROJECT_NAME} libprotobuf)
 
 include_directories(../)
 include_directories(../thirdparty/lua-5.3.5/src)
