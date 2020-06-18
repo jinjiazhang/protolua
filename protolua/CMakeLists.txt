@@ -12,8 +12,15 @@ aux_source_directory(. DIR_SRCS)
 file(GLOB_RECURSE DIR_INCS *.h *.hpp)
 source_group("Include Files" FILES ${DIR_INCS}) 
 
-add_library(${PROJECT_NAME} SHARED ${DIR_SRCS} ${DIR_INCS})
-target_link_libraries(${PROJECT_NAME} libprotobuf)
+
+IF (CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Darwin")
+    add_library(${PROJECT_NAME} SHARED ${DIR_SRCS} ${DIR_INCS})
+    target_link_libraries(${PROJECT_NAME} libprotobuf)
+ELSE ()
+    add_library(${PROJECT_NAME} SHARED ${DIR_SRCS} ${DIR_INCS})
+    target_link_libraries(${PROJECT_NAME} lua53 libprotobuf)
+ENDIF (CMAKE_SYSTEM_NAME MATCHES "Linux" OR CMAKE_SYSTEM_NAME MATCHES "Darwin")
+
 
 include_directories(../)
 include_directories(../thirdparty/lua-5.3.5/src)
