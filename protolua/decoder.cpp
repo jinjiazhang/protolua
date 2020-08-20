@@ -39,7 +39,7 @@ bool decode_required(const Message& message, const FieldDescriptor* field, lua_S
 bool decode_optional(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
-    if (!reflection->HasField(message, field)) {
+    if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE && !reflection->HasField(message, field)) {
         lua_pushnil(L);
         return true;
     }

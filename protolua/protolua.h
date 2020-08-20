@@ -1,5 +1,5 @@
-#ifndef _JINJIAZHANG_PROTO_H_
-#define _JINJIAZHANG_PROTO_H_
+#ifndef _JINJIAZHANG_PROTOLUA_H_
+#define _JINJIAZHANG_PROTOLUA_H_
 
 #include "lua.hpp"
 #include "protover.h"
