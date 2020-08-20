@@ -43,7 +43,7 @@ static int create(lua_State *L)
     assert(lua_gettop(L) == 1);
     luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
-    if (!proto_decode(proto, L, 0, 0))
+    if (!proto_create(proto, L))
     {
         proto_error("proto.create fail, proto=%s", proto);
         return 0;

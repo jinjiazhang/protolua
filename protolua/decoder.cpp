@@ -39,8 +39,8 @@ bool decode_required(const Message& message, const FieldDescriptor* field, lua_S
 bool decode_optional(const Message& message, const FieldDescriptor* field, lua_State* L)
 {
     const Reflection* reflection = message.GetReflection();
-    if (field->containing_oneof() && !reflection->HasField(message, field)) {
-        lua_pushnil(L); // oneof field special
+    if (!reflection->HasField(message, field)) {
+        lua_pushnil(L);
         return true;
     }
 
@@ -185,6 +185,31 @@ bool decode_message(const Message& message, const Descriptor* descriptor, lua_St
     {
         const FieldDescriptor* field = descriptor->field(i);
         PROTO_DO(decode_field(message, field, L));
+        lua_setfield(L, -2, field->name().c_str());
+    }
+    return true;
+}
+
+bool proto_create(const char* proto, lua_State* L)
+{
+    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    PROTO_ASSERT(descriptor);
+
+    const Message* prototype = g_factory.GetPrototype(descriptor);
+    PROTO_ASSERT(prototype);
+
+    std::unique_ptr<Message> message(prototype->New());
+    int field_count = descriptor->field_count();
+    lua_createtable(L, 0, field_count);
+    for (int i = 0; i < field_count; i++)
+    {
+        const FieldDescriptor* field = descriptor->field(i);
+        if (field->is_map() || field->is_repeated())
+            lua_newtable(L);
+        else if (field->cpp_type() == FieldDescriptor::CPPTYPE_MESSAGE)
+            PROTO_DO(proto_create(field->message_type()->full_name().c_str(), L))
+        else
+            PROTO_DO(decode_single(*message.get(), field, L))
         lua_setfield(L, -2, field->name().c_str());
     }
     return true;

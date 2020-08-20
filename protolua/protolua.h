@@ -28,6 +28,7 @@
 #define PROTO_ASSERT(exp) { if(!(exp)) return false; }
 
 bool proto_parse(const char* file, lua_State* L);
+bool proto_create(const char* proto, lua_State* L);
 bool proto_encode(const char* proto, lua_State* L, int index, char* output, size_t* size);
 bool proto_decode(const char* proto, lua_State* L, const char* input, size_t size);
 bool proto_pack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size);
