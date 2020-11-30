@@ -150,12 +150,12 @@ class ProtoErrorCollector : public MultiFileErrorCollector
 {
     virtual void AddError(const std::string& filename, int line, int column, const std::string& message)
     {
-        proto_error("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+        proto_error("%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
     }
 
     virtual void AddWarning(const std::string& filename, int line, int column, const std::string& message)
     {
-        proto_warn("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+        proto_warn("%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
     }
 };
 
