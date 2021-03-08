@@ -48,7 +48,6 @@ bool encode_optional(Message* message, const FieldDescriptor* field, lua_State* 
 bool encode_repeated(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_warn("encode_repeated field nil, field=%s", field->full_name().c_str());
         return true;
     }
 
@@ -70,7 +69,6 @@ bool encode_repeated(Message* message, const FieldDescriptor* field, lua_State* 
 bool encode_table(Message* message, const FieldDescriptor* field, lua_State* L, int index)
 {
     if (lua_isnil(L, index)) {
-        proto_warn("encode_table field nil, field=%s", field->full_name().c_str());
         return true;
     }
 
