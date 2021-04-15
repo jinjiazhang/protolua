@@ -3,6 +3,14 @@
 using namespace google::protobuf;
 using namespace google::protobuf::compiler;
 
+class ProtoErrorCollector;
+std::set<std::string> g_parsedFiles;
+std::set<std::string> g_parsedEnums;
+DiskSourceTree* g_sourceTree = 0;
+ProtoErrorCollector* g_errorCollector = 0;
+Importer* g_importer = 0;
+DynamicMessageFactory* g_factory = 0;
+
 bool parse_enum(const EnumDescriptor* enum_desc, lua_State* L)
 {
     lua_getglobal(L, enum_desc->name().c_str());
@@ -23,6 +31,7 @@ bool parse_enum(const EnumDescriptor* enum_desc, lua_State* L)
         lua_settable(L, -3);
     }
     lua_setglobal(L, enum_desc->name().c_str());
+    g_parsedEnums.insert(enum_desc->name().c_str());
     return true;
 }
 
@@ -71,11 +80,85 @@ bool parse_file(const FileDescriptor* file_desc, lua_State* L)
 
 bool proto_parse(const char* file, lua_State* L)
 {
-    const FileDescriptor* parsed_file = g_importer.Import(file);
+    const FileDescriptor* parsed_file = g_importer->Import(file);
     if (parsed_file == NULL) {
         return false;
     }
 
     PROTO_DO(parse_file(parsed_file, L));
+    g_parsedFiles.insert(file);
+    return true;
+}
+
+struct FieldOrderingByNumber {
+    inline bool operator()(const FieldDescriptor* a,
+        const FieldDescriptor* b) const {
+        return a->number() < b->number();
+    }
+};
+
+std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor) {
+    std::vector<const FieldDescriptor*> fields(descriptor->field_count());
+    for (int i = 0; i < descriptor->field_count(); i++) {
+        fields[i] = descriptor->field(i);
+    }
+    std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
+    return fields;
+}
+
+class ProtoErrorCollector : public MultiFileErrorCollector
+{
+    virtual void AddError(const std::string& filename, int line, int column, const std::string& message)
+    {
+        proto_error("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+    }
+
+    virtual void AddWarning(const std::string& filename, int line, int column, const std::string& message)
+    {
+        proto_warn("[file]%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
+    }
+};
+
+void proto_init(lua_State* L)
+{
+    g_errorCollector = new ProtoErrorCollector();
+    g_sourceTree = new DiskSourceTree();
+    g_sourceTree->MapPath("", "./");
+    g_sourceTree->MapPath("", "./proto/");
+    g_importer = new Importer(g_sourceTree, g_errorCollector);
+    g_factory = new DynamicMessageFactory();
+}
+
+bool proto_reload(lua_State* L)
+{
+    std::list<const FileDescriptor*> fileDescriptorList;
+    Importer* importer = new Importer(g_sourceTree, g_errorCollector);
+    std::set<std::string>::iterator it = g_parsedFiles.begin();
+    for (; it != g_parsedFiles.end(); ++it)
+    {
+        const FileDescriptor* parsed_file = importer->Import(it->c_str());
+        if (parsed_file == NULL)
+        {
+            delete importer;
+            return false;
+        }
+        fileDescriptorList.push_back(parsed_file);
+    }
+
+    delete g_importer;
+    g_importer = importer;
+    
+    std::set<std::string>::iterator it1 = g_parsedEnums.begin();
+    for (; it1 != g_parsedEnums.end(); ++it1)
+    {
+        lua_pushnil(L);
+        lua_setglobal(L, it1->c_str());
+    }
+
+    std::list<const FileDescriptor*>::iterator it2 = fileDescriptorList.begin();
+    for (; it2 != fileDescriptorList.end(); ++it2)
+    {
+        parse_file(*it2, L);
+    }
     return true;
 }

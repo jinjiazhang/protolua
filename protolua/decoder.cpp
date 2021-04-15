@@ -192,10 +192,10 @@ bool decode_message(const Message& message, const Descriptor* descriptor, lua_St
 
 bool proto_create(const char* proto, lua_State* L)
 {
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer->pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_factory.GetPrototype(descriptor);
+    const Message* prototype = g_factory->GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
     std::unique_ptr<Message> message(prototype->New());
@@ -217,10 +217,10 @@ bool proto_create(const char* proto, lua_State* L)
 
 bool proto_decode(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer->pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_factory.GetPrototype(descriptor);
+    const Message* prototype = g_factory->GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
     std::unique_ptr<Message> message(prototype->New());
@@ -231,10 +231,10 @@ bool proto_decode(const char* proto, lua_State* L, const char* input, size_t siz
 std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 bool proto_unpack(const char* proto, lua_State* L, const char* input, size_t size)
 {
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer->pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_factory.GetPrototype(descriptor);
+    const Message* prototype = g_factory->GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
     std::unique_ptr<Message> message(prototype->New());

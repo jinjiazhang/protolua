@@ -3,6 +3,9 @@
 using namespace google::protobuf;
 using namespace google::protobuf::compiler;
 
+void proto_init(lua_State* L);
+bool proto_reload(lua_State* L);
+
 // ret = proto.parse("preson.proto")
 static int parse(lua_State *L)
 {
@@ -26,7 +29,7 @@ static int exist(lua_State *L)
     assert(lua_gettop(L) == 1);
     luaL_checktype(L, 1, LUA_TSTRING);
     const char* proto = lua_tostring(L, 1);
-    if (!g_importer.pool()->FindMessageTypeByName(proto))
+    if (!g_importer->pool()->FindMessageTypeByName(proto))
     {
         lua_pushboolean(L, 0);
     }
@@ -119,6 +122,20 @@ static int unpack(lua_State *L)
     return lua_gettop(L) - 2;
 }
 
+// proto.reload()
+static int reload(lua_State *L)
+{
+    if (!proto_reload(L))
+    {
+        proto_error("proto.reload fail");
+        lua_pushboolean(L, false);
+        return 1;
+    }
+
+    lua_pushboolean(L, true);
+    return 1;
+}
+
 static const struct luaL_Reg protoLib[]={
     {"parse", parse},
     {"exist", exist},
@@ -127,49 +144,14 @@ static const struct luaL_Reg protoLib[]={
     {"decode", decode},
     {"pack", pack},
     {"unpack", unpack},
+    {"reload", reload},
     {NULL, NULL}
 };
 
-struct FieldOrderingByNumber {
-    inline bool operator()(const FieldDescriptor* a,
-        const FieldDescriptor* b) const {
-            return a->number() < b->number();
-    }
-};
-
-std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor) {
-    std::vector<const FieldDescriptor*> fields(descriptor->field_count());
-    for (int i = 0; i < descriptor->field_count(); i++) {
-        fields[i] = descriptor->field(i);
-    }
-    std::sort(fields.begin(), fields.end(), FieldOrderingByNumber());
-    return fields;
-}
-
-class ProtoErrorCollector : public MultiFileErrorCollector
+int luaopen_protolua(lua_State* L)
 {
-    virtual void AddError(const std::string& filename, int line, int column, const std::string& message)
-    {
-        proto_error("%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
-    }
+    proto_init(L);
 
-    virtual void AddWarning(const std::string& filename, int line, int column, const std::string& message)
-    {
-        proto_warn("%s line %d, column %d : %s", filename.c_str(), line, column, message.c_str());
-    }
-};
-
-ProtoErrorCollector        g_errorCollector;
-DiskSourceTree             g_sourceTree;
-Importer                   g_importer(&g_sourceTree, &g_errorCollector);
-DynamicMessageFactory      g_factory;
-
-#ifdef _WIN32
-extern "C" __declspec(dllexport) int luaopen_protolua(lua_State* L)
-#else
-extern "C" int luaopen_protolua(lua_State* L)
-#endif // _WIN32
-{
 #if LUA_VERSION_NUM == 501
     luaL_register(L, "proto", protoLib);
 #else
@@ -177,8 +159,5 @@ extern "C" int luaopen_protolua(lua_State* L)
     luaL_setfuncs(L, protoLib, 0);
     lua_setglobal(L, "proto");
 #endif
-    
-    g_sourceTree.MapPath("", "./");
-    g_sourceTree.MapPath("", "./proto/");
     return 1;
 }

@@ -211,10 +211,10 @@ bool encode_message(Message* message, const Descriptor* descriptor, lua_State* L
 
 bool proto_encode(const char* proto, lua_State* L, int index, char* output, size_t* size)
 {
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer->pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_factory.GetPrototype(descriptor);
+    const Message* prototype = g_factory->GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
     index = lua_absindex(L, index);
@@ -238,10 +238,10 @@ bool proto_encode(const char* proto, lua_State* L, int index, char* output, size
 std::vector<const FieldDescriptor*> SortFieldsByNumber(const Descriptor* descriptor);
 bool proto_pack(const char* proto, lua_State* L, int start, int end, char* output, size_t* size)
 {
-    const Descriptor* descriptor = g_importer.pool()->FindMessageTypeByName(proto);
+    const Descriptor* descriptor = g_importer->pool()->FindMessageTypeByName(proto);
     PROTO_ASSERT(descriptor);
 
-    const Message* prototype = g_factory.GetPrototype(descriptor);
+    const Message* prototype = g_factory->GetPrototype(descriptor);
     PROTO_ASSERT(prototype);
 
     start = lua_absindex(L, start);
