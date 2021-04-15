@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.1)
-project(lua53)
+project(lua-5.3.5)
 
 aux_source_directory(./src DIR_SRCS)
 list(REMOVE_ITEM DIR_SRCS ./src/lua.c ./src/luac.c)
