@@ -112,10 +112,10 @@ bool encode_single(Message* message, const FieldDescriptor* field, lua_State* L,
         reflection->SetUInt32(message, field, (uint32)lua_tointeger(L, index));
         break;
     case FieldDescriptor::CPPTYPE_INT64:
-        reflection->SetInt64(message, field, (int64)lua_tolonglong(L, index));
+        reflection->SetInt64(message, field, (int64)lua_toint64(L, index));
         break;
     case FieldDescriptor::CPPTYPE_UINT64:
-        reflection->SetUInt64(message, field, (uint64)lua_tolonglong(L, index));
+        reflection->SetUInt64(message, field, (uint64)lua_toint64(L, index));
         break;
     case FieldDescriptor::CPPTYPE_ENUM:
         reflection->SetEnumValue(message, field, (int)lua_tointeger(L, index));
@@ -161,10 +161,10 @@ bool encode_multiple(Message* message, const FieldDescriptor* field, lua_State* 
         reflection->AddUInt32(message, field, (uint32)lua_tointeger(L, index));
         break;
     case FieldDescriptor::CPPTYPE_INT64:
-        reflection->AddInt64(message, field, (int64)lua_tolonglong(L, index));
+        reflection->AddInt64(message, field, (int64)lua_toint64(L, index));
         break;
     case FieldDescriptor::CPPTYPE_UINT64:
-        reflection->AddUInt64(message, field, (uint64)lua_tolonglong(L, index));
+        reflection->AddUInt64(message, field, (uint64)lua_toint64(L, index));
         break;
     case FieldDescriptor::CPPTYPE_ENUM:
         reflection->AddEnumValue(message, field, (int)lua_tointeger(L, index));

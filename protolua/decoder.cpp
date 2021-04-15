@@ -99,10 +99,10 @@ bool decode_single(const Message& message, const FieldDescriptor* field, lua_Sta
         lua_pushinteger(L, reflection->GetUInt32(message, field));
         break;
     case FieldDescriptor::CPPTYPE_INT64:
-        lua_pushlonglong(L, reflection->GetInt64(message, field));
+        lua_pushint64(L, reflection->GetInt64(message, field));
         break;
     case FieldDescriptor::CPPTYPE_UINT64:
-        lua_pushlonglong(L, reflection->GetUInt64(message, field));
+        lua_pushint64(L, reflection->GetUInt64(message, field));
         break;
     case FieldDescriptor::CPPTYPE_ENUM:
         lua_pushinteger(L, reflection->GetEnumValue(message, field));
@@ -147,10 +147,10 @@ bool decode_multiple(const Message& message, const FieldDescriptor* field, lua_S
         lua_pushinteger(L, reflection->GetRepeatedUInt32(message, field, index));
         break;
     case FieldDescriptor::CPPTYPE_INT64:
-        lua_pushlonglong(L, reflection->GetRepeatedInt64(message, field, index));
+        lua_pushint64(L, reflection->GetRepeatedInt64(message, field, index));
         break;
     case FieldDescriptor::CPPTYPE_UINT64:
-        lua_pushlonglong(L, reflection->GetRepeatedUInt64(message, field, index));
+        lua_pushint64(L, reflection->GetRepeatedUInt64(message, field, index));
         break;
     case FieldDescriptor::CPPTYPE_ENUM:
         lua_pushinteger(L, reflection->GetRepeatedEnumValue(message, field, index));

@@ -2,13 +2,14 @@
 #define _JINJIAZHANG_PROTOVER_H_
 
 #include "lua.hpp"
-#define lua_tolonglong lua_tointeger
-#define lua_pushlonglong lua_pushinteger
 
-#if LUA_VERSION_NUM == 501
+#ifndef lua_toint64
+#define lua_toint64 lua_toint64
+#endif
 
-#undef lua_tolonglong
-#undef lua_pushlonglong
+#ifndef lua_pushint64
+#define lua_pushint64 lua_pushint64
+#endif
 
 inline int lua_geti(lua_State *L, int idx, lua_Integer n)
 {
@@ -36,16 +37,14 @@ inline lua_Integer luaL_len(lua_State *L, int idx)
     return luaL_getn(L, idx);
 }
 
-inline long long lua_tolonglong(lua_State *L, int idx)
+inline long long lua_toint64(lua_State *L, int idx)
 {
     return *(long long*)lua_tostring(L, idx);
 }
 
-inline void lua_pushlonglong(lua_State *L, long long n)
+inline void lua_pushint64(lua_State *L, long long n)
 {
     lua_pushlstring(L, (const char*)n, sizeof(n));
 }
-
-#endif
 
 #endif

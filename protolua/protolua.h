@@ -2,8 +2,10 @@
 #define _JINJIAZHANG_PROTOLUA_H_
 
 #include "lua.hpp"
-#include "protover.h"
-// #include "protolog/protolog.h"
+
+#if LUA_VERSION_NUM == 501
+#include "lua51ext.h"
+#endif
 
 #include "google/protobuf/dynamic_message.h"
 #include "google/protobuf/compiler/importer.h"
@@ -22,6 +24,14 @@
 #define proto_warn(fmt, ...)   printf("[warn]"fmt"\n", __VA_ARGS__)
 #define proto_error(fmt, ...)  printf("[error]"fmt"\n", __VA_ARGS__)
 #define proto_fatal(fmt, ...)  printf("[fatal]"fmt"\n", __VA_ARGS__)
+#endif
+
+#ifndef lua_toint64
+#define lua_toint64 lua_tointeger
+#endif
+
+#ifndef lua_pushint64
+#define lua_pushint64 lua_pushinteger
 #endif
 
 #define PROTO_DO(exp) { if(!(exp)) return false; }
