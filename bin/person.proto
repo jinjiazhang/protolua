@@ -17,5 +17,5 @@ message Person {
     }
     
     repeated PhoneNumber phones = 4;
-    map<int32, string> subjects = 5;
+    map<string, int32> scores = 5;
 }

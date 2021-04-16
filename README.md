@@ -27,7 +27,7 @@ message Person {
     }
     
     repeated PhoneNumber phones = 4;
-    map<int32, string> subjects = 5;
+    map<string, int32> scores = 5;
 }
 ```
 test.lua
@@ -35,26 +35,26 @@ test.lua
 require "protolua"
 proto.parse("person.proto")
 
-local player = {
+local person = {
     name = "jinjiazh",
     id = 10001,
     email = "jinjiazh@qq.com",
     phones = {
-        {number = "1818864xxxx", type = 1},
-        {number = "1868200xxxx", type = 2},
+        {number = "1818864xxxx", type = PhoneType.HOME},
+        {number = "1868200xxxx", type = PhoneType.WORK},
     },
-    subjects = {
-        [101] = "Chinese",
-        [102] = "English",
-        [103] = "Maths",
+    scores = {
+        ["Chinese"] = 82,
+        ["Maths"] = 98,
+        ["English"] = 88,
     }
 }
 
-local data = proto.encode("Person", player)
+local data = proto.encode("Person", person)
 local clone = proto.decode("Person", data)
 
-local data = proto.pack("Person", player.name, player.id, player.email, player.phones, player.subjects)
-local name, id, email, phones, subjects = proto.unpack("Person", data)
+local data = proto.pack("Person", person.name, person.id, person.email, person.phones, person.scores)
+local name, id, email, phones, scores = proto.unpack("Person", data)
 ```
 ## Advance Example
 ```C
