@@ -150,13 +150,8 @@ static const struct luaL_Reg protoLib[]={
 PROTO_API int luaopen_protolua(lua_State* L)
 {
     proto_init(L);
-
-#if LUA_VERSION_NUM == 501
-    luaL_register(L, "proto", protoLib);
-#else
     lua_newtable(L);
     luaL_setfuncs(L, protoLib, 0);
     lua_setglobal(L, "proto");
-#endif
-    return 1;
+    return 0;
 }
