@@ -1,4 +1,5 @@
 #include "protolua.h"
+#include <list>
 
 using namespace google::protobuf;
 using namespace google::protobuf::compiler;

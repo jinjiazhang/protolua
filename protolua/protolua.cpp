@@ -127,7 +127,6 @@ static int reload(lua_State *L)
 {
     if (!proto_reload(L))
     {
-        proto_error("proto.reload fail");
         lua_pushboolean(L, false);
         return 1;
     }
