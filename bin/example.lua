@@ -6,8 +6,8 @@ local person = {
     id = 10001,
     email = "jinjiazh@qq.com",
     phones = {
-        {number = "1818864xxxx", type = PhoneType.HOME},
-        {number = "1868200xxxx", type = PhoneType.WORK},
+        {number = "183****0402", type = PhoneType.HOME},
+        {number = "186****9470", type = PhoneType.WORK},
     },
     scores = {
     	["Chinese"] = 82,
