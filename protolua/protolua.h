@@ -34,6 +34,12 @@
 #define lua_pushint64 lua_pushinteger
 #endif
 
+#ifdef _WIN32
+#define PROTO_API extern "C" __declspec(dllexport)
+#else
+#define PROTO_API extern "C"
+#endif
+
 #define PROTO_DO(exp) { if(!(exp)) return false; }
 #define PROTO_ASSERT(exp) { if(!(exp)) return false; }
 

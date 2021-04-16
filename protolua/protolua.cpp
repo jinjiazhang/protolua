@@ -148,7 +148,7 @@ static const struct luaL_Reg protoLib[]={
     {NULL, NULL}
 };
 
-LUA_API int luaopen_protolua(lua_State* L)
+PROTO_API int luaopen_protolua(lua_State* L)
 {
     proto_init(L);
 
