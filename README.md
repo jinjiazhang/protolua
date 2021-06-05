@@ -86,6 +86,33 @@ end
 
 proto.CallServer("OnBuyItemReq", 1021, 10)
 ```
+
+## Attention Please
+lua51ext.h for int64
+```C
+inline long long lua_toint64(lua_State *L, int idx)
+{
+    if (lua_type(L, idx) == LUA_TSTRING)
+    {
+        return atoll(lua_tostring(L, idx));
+    }
+    return (long long)lua_tonumber(L, idx);
+}
+
+inline void lua_pushint64(lua_State *L, long long value)
+{
+    // because of #define LUA_NUMBER_FMT "%.14g"
+    if (abs(value) > 99999999999999)
+    {
+        char str[32];
+        lua_pushstring(L, _i64toa(value, str, 10));
+        return;
+    }
+
+    lua_pushnumber(L, (lua_Number)value);
+}
+```
+
 ## Dependencies
 lua-5.3.5: https://www.lua.org/ftp/lua-5.3.5.tar.gz<br>
 protobuf: https://github.com/google/protobuf<br>
