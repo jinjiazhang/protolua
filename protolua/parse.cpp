@@ -6,13 +6,13 @@ using namespace google::protobuf::compiler;
 
 class ProtoErrorCollector;
 std::set<std::string> g_parsedFiles;
-std::set<std::string> g_parsedEnums;
+std::set<std::string> g_definedEnums;
 DiskSourceTree* g_sourceTree = 0;
 ProtoErrorCollector* g_errorCollector = 0;
 Importer* g_importer = 0;
 DynamicMessageFactory* g_factory = 0;
 
-bool parse_enum(const EnumDescriptor* enum_desc, lua_State* L)
+bool define_enum(const EnumDescriptor* enum_desc, lua_State* L)
 {
     lua_getglobal(L, enum_desc->name().c_str());
     if (!lua_isnil(L, -1))
@@ -32,49 +32,49 @@ bool parse_enum(const EnumDescriptor* enum_desc, lua_State* L)
         lua_settable(L, -3);
     }
     lua_setglobal(L, enum_desc->name().c_str());
-    g_parsedEnums.insert(enum_desc->name().c_str());
+    g_definedEnums.insert(enum_desc->name().c_str());
     return true;
 }
 
-bool parse_message(const Descriptor* message_desc, lua_State* L)
+bool traverse_message(const Descriptor* message_desc, lua_State* L)
 {
     int emum_count = message_desc->enum_type_count();
     for (int i = 0; i < emum_count; i++)
     {
         const EnumDescriptor* enum_desc = message_desc->enum_type(i);
-        PROTO_DO(parse_enum(enum_desc, L));
+        PROTO_DO(define_enum(enum_desc, L));
     }
 
     int nest_count = message_desc->nested_type_count();
     for (int i = 0; i < nest_count; i++)
     {
         const Descriptor* nest_desc = message_desc->nested_type(i);
-        PROTO_DO(parse_message(nest_desc, L));
+        PROTO_DO(traverse_message(nest_desc, L));
     }
     return true;
 }
 
-bool parse_file(const FileDescriptor* file_desc, lua_State* L)
+bool traverse_file(const FileDescriptor* file_desc, lua_State* L)
 {
     int dep_count = file_desc->dependency_count();
     for (int i = 0; i < dep_count; i++)
     {
         const FileDescriptor* dep_file = file_desc->dependency(i);
-        PROTO_DO(parse_file(dep_file, L));
+        PROTO_DO(traverse_file(dep_file, L));
     }
 
     int emum_count = file_desc->enum_type_count();
     for (int i = 0; i < emum_count; i++)
     {
         const EnumDescriptor* enum_desc = file_desc->enum_type(i);
-        PROTO_DO(parse_enum(enum_desc, L));
+        PROTO_DO(define_enum(enum_desc, L));
     }
 
     int message_count = file_desc->message_type_count();
     for (int i = 0; i < message_count; i++)
     {
         const Descriptor* message_desc = file_desc->message_type(i);
-        PROTO_DO(parse_message(message_desc, L));
+        PROTO_DO(traverse_message(message_desc, L));
     }
     return true;
 }
@@ -86,7 +86,7 @@ bool proto_parse(const char* file, lua_State* L)
         return false;
     }
 
-    PROTO_DO(parse_file(parsed_file, L));
+    PROTO_DO(traverse_file(parsed_file, L));
     g_parsedFiles.insert(file);
     return true;
 }
@@ -149,8 +149,8 @@ bool proto_reload(lua_State* L)
     delete g_importer;
     g_importer = importer;
     
-    std::set<std::string>::iterator it1 = g_parsedEnums.begin();
-    for (; it1 != g_parsedEnums.end(); ++it1)
+    std::set<std::string>::iterator it1 = g_definedEnums.begin();
+    for (; it1 != g_definedEnums.end(); ++it1)
     {
         lua_pushnil(L);
         lua_setglobal(L, it1->c_str());
@@ -159,7 +159,7 @@ bool proto_reload(lua_State* L)
     std::list<const FileDescriptor*>::iterator it2 = fileDescriptorList.begin();
     for (; it2 != fileDescriptorList.end(); ++it2)
     {
-        parse_file(*it2, L);
+        traverse_file(*it2, L);
     }
     return true;
 }
