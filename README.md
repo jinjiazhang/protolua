@@ -87,6 +87,40 @@ end
 proto.CallServer("OnBuyItemReq", 1021, 10)
 ```
 
+## Path Mapping
+
+If you want to put `*.proto` files to other directory, you can use path mapping.
+
+### Example:
+
+Directory Tree:
+```
+C:\my_project\
+    proto\
+        a.proto
+    other_proto\
+        b.proto
+    run.exe
+D:\any_directory\
+    c.proto
+```
+
+Map path:
+```Lua
+require "protolua"
+
+-- Added by default, so there is no need to map "./" and "./proto/"
+-- proto.map_path("", "./")
+-- proto.map_path("", "./proto/")
+proto.map_path("", "./other_proto/")
+proto.map_path("", "D:\any_directory\")
+
+-- Now, we can parse the proto files
+proto.parse("a.proto")
+proto.parse("b.proto")
+proto.parse("c.proto")
+```
+
 ## Attention Please
 lua51ext.h for int64
 ```C

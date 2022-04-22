@@ -5,8 +5,9 @@ using namespace google::protobuf::compiler;
 
 void proto_init(lua_State* L);
 bool proto_reload(lua_State* L);
+void proto_map_path(const std::string &virtual_path, const std::string &disk_path);
 
-// ret = proto.parse("preson.proto")
+// ret = proto.parse("person.proto")
 static int parse(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
@@ -135,16 +136,27 @@ static int reload(lua_State *L)
     return 1;
 }
 
-static const struct luaL_Reg protoLib[]={
-    {"parse", parse},
-    {"exist", exist},
-    {"create", create},
-    {"encode", encode},
-    {"decode", decode},
-    {"pack", pack},
-    {"unpack", unpack},
-    {"reload", reload},
-    {NULL, NULL}
+// proto.map_path("", "./my_protos_dir/")
+static int map_path(lua_State *L)
+{
+    assert(lua_gettop(L) == 2);
+    const char *virtual_path = luaL_checkstring(L, 1);
+    const char *disk_path = luaL_checkstring(L, 2);
+    proto_map_path(virtual_path, disk_path);
+    return 0;
+}
+
+static const struct luaL_Reg protoLib[] = {
+        {"parse",    parse},
+        {"exist",    exist},
+        {"create",   create},
+        {"encode",   encode},
+        {"decode",   decode},
+        {"pack",     pack},
+        {"unpack",   unpack},
+        {"reload",   reload},
+        {"map_path", map_path},
+        {NULL, NULL}
 };
 
 PROTO_API int luaopen_protolua(lua_State* L)
