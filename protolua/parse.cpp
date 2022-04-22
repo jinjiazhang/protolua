@@ -130,6 +130,11 @@ void proto_init(lua_State* L)
     g_factory = new DynamicMessageFactory();
 }
 
+void proto_map_path(const std::string &virtual_path, const std::string &disk_path)
+{
+    g_sourceTree->MapPath(virtual_path, disk_path);
+}
+
 bool proto_reload(lua_State* L)
 {
     std::list<const FileDescriptor*> fileDescriptorList;
