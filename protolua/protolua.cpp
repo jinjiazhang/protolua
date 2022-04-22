@@ -6,7 +6,7 @@ using namespace google::protobuf::compiler;
 void proto_init(lua_State* L);
 bool proto_reload(lua_State* L);
 
-// ret = proto.parse("preson.proto")
+// ret = proto.parse("person.proto")
 static int parse(lua_State *L)
 {
     assert(lua_gettop(L) == 1);
