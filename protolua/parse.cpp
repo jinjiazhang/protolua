@@ -151,6 +151,9 @@ bool proto_reload(lua_State* L)
         fileDescriptorList.push_back(parsed_file);
     }
 
+    delete g_factory;
+    g_factory = new DynamicMessageFactory();
+
     delete g_importer;
     g_importer = importer;
     
